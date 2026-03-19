@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一括メール送信 - 管理画面</title>
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <!-- 戻るボタン -->
+    <div style="margin-bottom: 20px;">
+      <a href="/bookings-list.html" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 予約一覧に戻る
+      </a>
+    </div>
+
+    <div class="admin-card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-envelope"></i> 一括メール送信
+        </h2>
+      </div>
+
+      <div class="card-body">
+        <!-- 説明 -->
+        <div class="info-box" style="background: #e7f3ff; border-left: 4px solid #0d6efd; padding: 15px; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #0d6efd;">
+            <i class="fas fa-info-circle"></i> 使い方
+          </h3>
+          <ol style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
+            <li>メールテンプレートを選択するか、直接入力します</li>
+            <li>予約番号CSVファイルをアップロードします</li>
+            <li>プレビューで内容を確認できます</li>
+            <li>「送信登録」ボタンでメールをDBに登録します</li>
+          </ol>
+        </div>
+
+        <form id="bulkEmailForm">
+          <!-- テンプレート選択 -->
+          <div class="form-group">
+            <label class="form-label">📝 テンプレート選択（任意）</label>
+            <select id="templateSelect" class="form-control">
+              <option value="">新規作成（テンプレートなし）</option>
+            </select>
+            <p class="help-text">※ 既存テンプレートを選択すると、フォームに自動入力されます</p>
+          </div>
+
+          <!-- FROM -->
+          <div class="form-group">
+            <label class="form-label">📧 差出人 (FROM) <span style="color: #dc3545;">*必須</span></label>
+            <input type="email" id="fromEmail" class="form-control" placeholder="noreply@example.com" required>
+          </div>
+
+          <!-- BCC -->
+          <div class="form-group">
+            <label class="form-label">📨 BCC（任意）</label>
+            <input type="email" id="bccEmail" class="form-control" placeholder="admin@example.com">
+            <p class="help-text">※ 複数の場合はカンマ区切り</p>
+          </div>
+
+          <!-- メールタイトル -->
+          <div class="form-group">
+            <label class="form-label">📋 メールタイトル <span style="color: #dc3545;">*必須</span></label>
+            <input type="text" id="emailSubject" class="form-control" placeholder="例: 【{{event_name}}】ご予約確認" required>
+            <p class="help-text">※ プレースホルダー使用可能（例: {{booking_number}}, {{booker_name}}, {{event_name}}）</p>
+          </div>
+
+          <!-- メール本文 -->
+          <div class="form-group">
+            <label class="form-label">📝 メール本文 <span style="color: #dc3545;">*必須</span></label>
+            <textarea id="emailBody" class="form-control" rows="12" placeholder="{{booker_name}} 様
+
+{{event_name}}のご予約ありがとうございます。
+
+■ご予約内容
+予約番号: {{booking_number}}
+イベント名: {{event_name}}
+開催期間: {{event_start_date}} 〜 {{event_end_date}}
+合計金額: {{total_amount}}円
+
+ご不明な点がございましたら、お気軽にお問い合わせください。" required></textarea>
+            <p class="help-text">※ 利用可能なプレースホルダー: {{booking_number}}, {{booker_name}}, {{event_name}}, {{total_amount}} など</p>
+          </div>
+
+          <!-- 送信日時 -->
+          <div class="form-group">
+            <label class="form-label">📅 送信日時 <span style="color: #dc3545;">*必須</span></label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="date" id="scheduledDate" class="form-control" style="flex: 1;" required>
+              <input type="time" id="scheduledTime" class="form-control" style="width: 120px;" value="10:00" required>
+            </div>
+            <label style="margin-top: 10px; display: flex; align-items: center;">
+              <input type="checkbox" id="sendNow" style="margin-right: 8px;">
+              <span>すぐに送信する（送信日時を無視）</span>
+            </label>
+            <p class="help-text">※ 指定した日時にメールが送信されます（将来実装予定）</p>
+          </div>
+
+          <!-- 予約番号CSV -->
+          <div class="form-group">
+            <label class="form-label">📄 予約番号CSV <span style="color: #dc3545;">*必須</span></label>
+            <input type="file" id="bookingCsv" class="form-control" accept=".csv" required>
+            <p class="help-text">※ CSVファイルに予約番号（BKで始まる）を記載してください</p>
+          </div>
+
+          <!-- アクションボタン -->
+          <div style="text-align: center; margin: 20px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" id="saveTemplateBtn" class="btn btn-success" style="min-width: 200px;">
+              <i class="fas fa-save"></i> テンプレートとして保存
+            </button>
+            <button type="button" id="previewBtn" class="btn btn-info" style="min-width: 200px;">
+              <i class="fas fa-eye"></i> プレビュー表示
+            </button>
+          </div>
+
+          <!-- プレビュー表示エリア -->
+          <div id="previewArea" style="display: none; margin-top: 20px;">
+            <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: bold;">
+              <i class="fas fa-eye"></i> プレビュー（最初の1件）
+            </h3>
+            <div style="border: 2px solid #0d6efd; border-radius: 8px; padding: 20px; background: #f8f9fa;">
+              <div style="margin-bottom: 15px;">
+                <strong>TO:</strong> <span id="previewTo" style="color: #0d6efd;"></span>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <strong>件名:</strong> <span id="previewSubject"></span>
+              </div>
+              <div style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #dee2e6;">
+                <pre id="previewBody" style="white-space: pre-wrap; margin: 0; font-family: inherit;"></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- 進捗表示 -->
+          <div id="progressArea" style="display: none; margin-top: 30px;">
+            <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: bold;">
+              <i class="fas fa-spinner fa-spin"></i> 処理中...
+            </h3>
+            <div class="progress-bar" style="background: #e9ecef; border-radius: 8px; height: 30px; overflow: hidden;">
+              <div id="progressBar" style="background: linear-gradient(90deg, #0d6efd, #0dcaf0); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                0%
+              </div>
+            </div>
+            <p id="progressText" style="text-align: center; margin-top: 10px; font-size: 14px; color: #666;">
+              処理を開始しています...
+            </p>
+          </div>
+
+          <!-- 結果表示 -->
+          <div id="resultArea" style="display: none; margin-top: 30px;">
+            <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: bold;">
+              <i class="fas fa-check-circle" style="color: #28a745;"></i> 処理結果
+            </h3>
+            <div id="resultSummary" style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
+            </div>
+            <div id="resultTable" style="overflow-x: auto;">
+            </div>
+          </div>
+
+          <!-- ボタン -->
+          <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="min-width: 200px; font-size: 16px;">
+              <i class="fas fa-paper-plane"></i> 送信登録
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- テンプレート保存モーダル -->
+  <div id="saveTemplateModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+      <h3 style="margin: 0 0 20px 0; font-size: 20px; font-weight: bold;">
+        <i class="fas fa-save"></i> テンプレートとして保存
+      </h3>
+      
+      <div class="form-group">
+        <label class="form-label">テンプレート名 <span style="color: #dc3545;">*必須</span></label>
+        <input type="text" id="templateName" class="form-control" placeholder="例: 予約確認メール" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">説明（任意）</label>
+        <input type="text" id="templateDescription" class="form-control" placeholder="例: お客様への予約確認メール">
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" id="cancelSaveBtn" class="btn btn-secondary">
+          <i class="fas fa-times"></i> キャンセル
+        </button>
+        <button type="button" id="confirmSaveBtn" class="btn btn-primary">
+          <i class="fas fa-check"></i> 保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-bulk-emails.js"></script>
+</body>
+</html>

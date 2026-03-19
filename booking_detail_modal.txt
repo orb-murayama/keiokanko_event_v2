@@ -1,0 +1,505 @@
+// 予約詳細画面（編集モーダル付き）
+app.get('/admin/bookings/:id', async (c) => {
+  const { DB } = c.env
+  const bookingId = c.req.param('id')
+
+  // 予約情報と関連データを取得
+  const booking = await DB.prepare(`
+    SELECT 
+      pb.*,
+      c.id as customer_id,
+      c.family_name,
+      c.first_name,
+      c.email,
+      c.tel,
+      c.zip,
+      c.pref_id,
+      c.city,
+      c.addr,
+      c.bldg,
+      pref.name as pref_name,
+      p.id as product_id,
+      p.name as product_name,
+      p.description as product_description,
+      e.id as event_id,
+      e.name as event_name,
+      cl.name as client_name,
+      cl.client_code
+    FROM product_bookings pb
+    LEFT JOIN customers c ON pb.customer_id = c.id
+    LEFT JOIN prefs pref ON c.pref_id = pref.id
+    LEFT JOIN products p ON pb.product_id = p.id
+    LEFT JOIN events e ON p.event_id = e.id
+    LEFT JOIN clients cl ON e.customer_client_id = cl.id
+    WHERE pb.id = ?
+  `).bind(bookingId).first()
+
+  if (!booking) {
+    return c.html('<h1>予約が見つかりません</h1>', 404)
+  }
+
+  // 予約番号生成（必要な場合）
+  if (!booking.booking_number && booking.event_id && booking.client_code) {
+    const sequence = String(booking.id).padStart(6, '0')
+    const bookingNumber = `${booking.event_id}-${booking.client_code}-${sequence}`
+    
+    await DB.prepare(`
+      UPDATE product_bookings SET booking_number = ? WHERE id = ?
+    `).bind(bookingNumber, booking.id).run()
+    
+    booking.booking_number = bookingNumber
+  }
+
+  // 予約ステータスのラベル
+  let bookingStatusLabel = '予約済み'
+  let bookingStatusClass = 'bg-green-100 text-green-800'
+  if (booking.booking_status === 'confirmed') {
+    bookingStatusLabel = '確定'
+    bookingStatusClass = 'bg-blue-100 text-blue-800'
+  } else if (booking.booking_status === 'cancelled') {
+    bookingStatusLabel = 'キャンセル'
+    bookingStatusClass = 'bg-red-100 text-red-800'
+  }
+
+  // 決済ステータスのラベル
+  let paymentStatusLabel = '未決済'
+  let paymentStatusClass = 'bg-yellow-100 text-yellow-800'
+  if (booking.payment_status === 'paid') {
+    paymentStatusLabel = '決済完了'
+    paymentStatusClass = 'bg-blue-100 text-blue-800'
+  } else if (booking.payment_status === 'refunded') {
+    paymentStatusLabel = '返金済み'
+    paymentStatusClass = 'bg-purple-100 text-purple-800'
+  } else if (booking.payment_status === 'failed') {
+    paymentStatusLabel = '決済失敗'
+    paymentStatusClass = 'bg-red-100 text-red-800'
+  }
+
+  // 商品合計金額
+  const productTotal = booking.price * booking.quantity
+
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>予約詳細 ${booking.booking_number || bookingId} | イベント予約管理システム</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-100">
+        <nav class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        イベント予約管理システム
+                    </h1>
+                    <div class="flex gap-4">
+                        <a href="/" class="hover:text-blue-200 transition"><i class="fas fa-home mr-1"></i>トップ</a>
+                        <a href="/admin" class="hover:text-blue-200 transition"><i class="fas fa-cog mr-1"></i>管理画面</a>
+                        <a href="/admin/bookings" class="hover:text-blue-200 transition"><i class="fas fa-clipboard-list mr-1"></i>予約管理</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container mx-auto px-4 py-8">
+            <div class="max-w-6xl mx-auto">
+                <!-- ヘッダー -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-file-invoice mr-2 text-orange-600"></i>予約詳細
+                            </h2>
+                            <div class="flex gap-4 items-center mt-3">
+                                <div class="text-lg">
+                                    <span class="text-gray-600">予約番号:</span>
+                                    <span class="font-mono font-bold text-blue-700 ml-2">${booking.booking_number || '-'}</span>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-sm font-semibold ${bookingStatusClass}">
+                                    ${bookingStatusLabel}
+                                </span>
+                                <span class="px-3 py-1 rounded-full text-sm font-semibold ${paymentStatusClass}">
+                                    ${paymentStatusLabel}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openEditModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
+                                <i class="fas fa-edit mr-2"></i>編集
+                            </button>
+                            <a href="/admin/bookings" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold">
+                                <i class="fas fa-arrow-left mr-2"></i>一覧に戻る
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 左カラム（メイン情報） -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- イベント・予約情報 -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+                                <i class="fas fa-calendar-check mr-2 text-blue-600"></i>イベント・予約情報
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">クライアント企業名</label>
+                                        <p class="text-gray-900 font-semibold">${booking.client_name || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">イベント名</label>
+                                        <p class="text-gray-900 font-semibold">${booking.event_name || '-'}</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">予約日時</label>
+                                        <p class="text-gray-900">${new Date(booking.created_at).toLocaleString('ja-JP')}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">数量</label>
+                                        <p class="text-gray-900 text-xl font-bold text-blue-600">${booking.quantity}名</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 商品・料金内訳 -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+                                <i class="fas fa-shopping-cart mr-2 text-green-600"></i>商品・料金内訳
+                            </h3>
+                            
+                            <!-- 商品 -->
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center py-3 border-b">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">${booking.product_name || '-'}</p>
+                                        <p class="text-sm text-gray-600">${booking.product_description || ''}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-gray-600">¥${(booking.price || 0).toLocaleString()} × ${booking.quantity}</p>
+                                        <p class="text-lg font-bold text-gray-900">¥${productTotal.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 合計 -->
+                            <div class="flex justify-between items-center pt-4 border-t-2">
+                                <p class="text-xl font-bold text-gray-800">合計金額</p>
+                                <p class="text-2xl font-bold text-blue-600">¥${productTotal.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右カラム（会員情報） -->
+                    <div class="space-y-6">
+                        <!-- 会員情報 -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+                                <i class="fas fa-user mr-2 text-green-600"></i>会員情報
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">会員名</label>
+                                    <p class="text-gray-900 font-semibold">${booking.family_name || ''} ${booking.first_name || ''}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">メールアドレス</label>
+                                    <p class="text-gray-900">${booking.email || '-'}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">電話番号</label>
+                                    <p class="text-gray-900">${booking.tel || '-'}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">住所</label>
+                                    <p class="text-gray-900 text-sm">
+                                        〒${booking.zip || ''}<br>
+                                        ${booking.pref_name || ''} ${booking.city || ''}<br>
+                                        ${booking.addr || ''}<br>
+                                        ${booking.bldg || ''}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 編集モーダル -->
+        <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-edit mr-2 text-blue-600"></i>予約編集
+                    </h2>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="editForm" class="p-6">
+                    <!-- 価格・料金内訳 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-bold text-gray-800">
+                                <i class="fas fa-yen-sign mr-2 text-green-600"></i>商品・料金内訳
+                            </h3>
+                            <button type="button" onclick="addPriceItem()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                                <i class="fas fa-plus mr-2"></i>項目追加
+                            </button>
+                        </div>
+                        
+                        <div id="priceItemsContainer" class="space-y-3">
+                            <!-- メイン商品 -->
+                            <div class="price-item border-2 border-blue-300 rounded-lg p-4 bg-blue-50" data-item-id="main">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">メイン商品</span>
+                                </div>
+                                <div class="grid grid-cols-4 gap-3">
+                                    <div class="col-span-2">
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">商品名</label>
+                                        <input type="text" class="item-name w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-100" 
+                                            value="${booking.product_name || ''}" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">単価</label>
+                                        <input type="number" class="item-price w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" 
+                                            value="${booking.price}" min="0" onchange="updateTotal()">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">数量</label>
+                                        <input type="number" class="item-quantity w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" 
+                                            value="${booking.quantity}" min="1" onchange="updateTotal()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <span class="text-lg font-bold text-gray-700">合計金額:</span>
+                            <span id="calculatedTotal" class="text-2xl font-bold text-blue-600">¥${productTotal.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <!-- ステータス -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">
+                            <i class="fas fa-tasks mr-2 text-red-600"></i>ステータス
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">予約ステータス</label>
+                                <select id="bookingStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="reserved" ${booking.booking_status === 'reserved' ? 'selected' : ''}>予約済み</option>
+                                    <option value="confirmed" ${booking.booking_status === 'confirmed' ? 'selected' : ''}>確定</option>
+                                    <option value="cancelled" ${booking.booking_status === 'cancelled' ? 'selected' : ''}>キャンセル</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">決済ステータス</label>
+                                <select id="paymentStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="pending" ${booking.payment_status === 'pending' ? 'selected' : ''}>未決済</option>
+                                    <option value="paid" ${booking.payment_status === 'paid' ? 'selected' : ''}>決済完了</option>
+                                    <option value="refunded" ${booking.payment_status === 'refunded' ? 'selected' : ''}>返金済み</option>
+                                    <option value="failed" ${booking.payment_status === 'failed' ? 'selected' : ''}>決済失敗</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ファイルアップロード -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">
+                            <i class="fas fa-file-upload mr-2 text-purple-600"></i>ファイル
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-qrcode mr-1"></i>QRコード画像
+                                </label>
+                                <input type="file" id="qrCodeFile" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <p class="text-xs text-gray-500 mt-1">PNG, JPG形式（最大5MB）</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-file-pdf mr-1"></i>予約関連PDF
+                                </label>
+                                <input type="file" id="pdfFile" accept=".pdf" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <p class="text-xs text-gray-500 mt-1">PDF形式（最大10MB）</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ボタン -->
+                    <div class="flex gap-4 pt-4 border-t">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
+                            <i class="fas fa-save mr-2"></i>更新する
+                        </button>
+                        <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg font-semibold">
+                            <i class="fas fa-times mr-2"></i>キャンセル
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+            const bookingId = ${bookingId};
+            let itemCounter = 0;
+
+            function openEditModal() {
+                document.getElementById('editModal').classList.remove('hidden');
+                document.getElementById('editModal').classList.add('flex');
+                updateTotal();
+            }
+
+            function closeEditModal() {
+                document.getElementById('editModal').classList.add('hidden');
+                document.getElementById('editModal').classList.remove('flex');
+            }
+
+            // 項目追加
+            function addPriceItem() {
+                itemCounter++;
+                const container = document.getElementById('priceItemsContainer');
+                const newItem = document.createElement('div');
+                newItem.className = 'price-item border border-gray-200 rounded-lg p-4 bg-gray-50';
+                newItem.dataset.itemId = 'new-' + itemCounter;
+                newItem.innerHTML = \`
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-1 bg-purple-600 text-white text-xs font-semibold rounded">オプション</span>
+                        <button type="button" onclick="removePriceItem(this)" class="ml-auto text-red-600 hover:text-red-800 text-sm">
+                            <i class="fas fa-trash mr-1"></i>削除
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">項目名</label>
+                            <input type="text" class="item-name w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" 
+                                value="" placeholder="項目名を入力">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">単価</label>
+                            <input type="number" class="item-price w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" 
+                                value="0" min="0" onchange="updateTotal()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">数量</label>
+                            <input type="number" class="item-quantity w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" 
+                                value="1" min="1" onchange="updateTotal()">
+                        </div>
+                    </div>
+                \`;
+                container.appendChild(newItem);
+                updateTotal();
+            }
+
+            // 項目削除
+            function removePriceItem(button) {
+                if (!confirm('この項目を削除しますか？')) return;
+                const item = button.closest('.price-item');
+                item.remove();
+                updateTotal();
+            }
+
+            // 合計更新
+            function updateTotal() {
+                let total = 0;
+                document.querySelectorAll('.price-item').forEach(item => {
+                    const price = parseInt(item.querySelector('.item-price').value) || 0;
+                    const quantity = parseInt(item.querySelector('.item-quantity').value) || 0;
+                    total += price * quantity;
+                });
+                document.getElementById('calculatedTotal').textContent = '¥' + total.toLocaleString();
+            }
+
+            // フォーム送信
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!confirm('予約情報を更新しますか？')) {
+                    return;
+                }
+
+                // 商品・料金内訳を配列化
+                const priceItems = [];
+                document.querySelectorAll('.price-item').forEach((item, index) => {
+                    const name = item.querySelector('.item-name').value;
+                    const price = parseInt(item.querySelector('.item-price').value) || 0;
+                    const quantity = parseInt(item.querySelector('.item-quantity').value) || 0;
+                    priceItems.push({
+                        name,
+                        price,
+                        quantity,
+                        isMain: index === 0
+                    });
+                });
+
+                const requestData = {
+                    booking_status: document.getElementById('bookingStatus').value,
+                    payment_status: document.getElementById('paymentStatus').value,
+                    price_items: priceItems
+                };
+
+                // QRコードファイル
+                const qrFile = document.getElementById('qrCodeFile').files[0];
+                if (qrFile) {
+                    if (qrFile.size > 5 * 1024 * 1024) {
+                        alert('QRコード画像は5MB以下にしてください');
+                        return;
+                    }
+                    const qrBase64 = await fileToBase64(qrFile);
+                    requestData.qr_code = qrBase64;
+                }
+
+                // PDFファイル
+                const pdfFile = document.getElementById('pdfFile').files[0];
+                if (pdfFile) {
+                    if (pdfFile.size > 10 * 1024 * 1024) {
+                        alert('PDFファイルは10MB以下にしてください');
+                        return;
+                    }
+                    const pdfBase64 = await fileToBase64(pdfFile);
+                    requestData.pdf_file = pdfBase64;
+                }
+
+                try {
+                    await axios.put(\`/api/bookings/\${bookingId}\`, requestData, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    alert('予約情報を更新しました');
+                    location.reload();
+                } catch (error) {
+                    alert('更新に失敗しました: ' + (error.response?.data?.error || error.message));
+                    console.error(error);
+                }
+            });
+
+            // ファイルをBase64に変換
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+

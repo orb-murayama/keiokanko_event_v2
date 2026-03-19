@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オプション機能テスト</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #ffffff; }
+        .test-section { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        .test-result { background: #f5f5f5; padding: 10px; margin: 10px 0; white-space: pre-wrap; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>オプション機能テスト</h1>
+    
+    <div id="app">
+        <div class="test-section">
+            <h2>テスト1: オプションAPI呼び出し</h2>
+            <button @click="testOptionsAPI">オプション取得テスト</button>
+            <div v-if="testResult1" class="test-result">{{ testResult1 }}</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>テスト2: 日付選択シミュレーション</h2>
+            <button @click="testDateSelection">日付選択テスト</button>
+            <div v-if="testResult2" class="test-result">{{ testResult2 }}</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>テスト3: オプションデータ表示</h2>
+            <div v-if="selectedDateOptions.length > 0">
+                <h3>オプション一覧:</h3>
+                <div v-for="option in selectedDateOptions" :key="option.option_id" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                    <h4>{{ option.option_name }}</h4>
+                    <p>{{ option.option_description }}</p>
+                    <p>在庫: {{ option.available }}個</p>
+                    <div v-for="price in option.prices" :key="price.category_name">
+                        {{ price.category_name }}: {{ price.price }}円
+                    </div>
+                </div>
+            </div>
+            <div v-else>
+                <p>オプションが選択されていません</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    eventId: 2,
+                    testDate: '2026-10-15',
+                    testResult1: '',
+                    testResult2: '',
+                    selectedDateOptions: []
+                };
+            },
+            methods: {
+                async testOptionsAPI() {
+                    try {
+                        this.testResult1 = 'API呼び出し中...';
+                        const response = await axios.get(`/api/events/${this.eventId}/options-by-date?date=${this.testDate}`);
+                        this.testResult1 = 'API呼び出し成功!\n' + JSON.stringify(response.data, null, 2);
+                        console.log('API Response:', response.data);
+                    } catch (error) {
+                        this.testResult1 = 'API呼び出しエラー:\n' + error.message;
+                        console.error('API Error:', error);
+                    }
+                },
+                async testDateSelection() {
+                    try {
+                        this.testResult2 = '日付選択処理中...';
+                        console.log('日付選択:', this.testDate);
+                        
+                        const response = await axios.get(`/api/events/${this.eventId}/options-by-date?date=${this.testDate}`);
+                        const { options } = response.data;
+                        
+                        this.selectedDateOptions = options.map(option => {
+                            const totalAvailable = option.stocks.reduce((sum, stock) => sum + (stock.available || 0), 0);
+                            return {
+                                option_id: option.option_id,
+                                option_name: option.option_name,
+                                option_description: option.option_description,
+                                image_url: option.image_url,
+                                prices: option.prices,
+                                stocks: option.stocks,
+                                available: totalAvailable
+                            };
+                        });
+                        
+                        this.testResult2 = '日付選択成功!\nオプション数: ' + this.selectedDateOptions.length;
+                        console.log('オプション読み込み完了:', this.selectedDateOptions);
+                    } catch (error) {
+                        this.testResult2 = '日付選択エラー:\n' + error.message;
+                        console.error('Error:', error);
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

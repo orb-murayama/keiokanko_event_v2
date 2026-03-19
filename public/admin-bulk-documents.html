@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帳票一括生成 | 管理画面</title>
+  
+  <!-- CSS読み込み -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    .upload-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .file-input-group {
+      margin-bottom: 20px;
+    }
+    
+    .file-input-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .file-input-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #fff;
+      border: 2px dashed #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .file-input-button:hover {
+      border-color: #007bff;
+      background-color: #f0f8ff;
+    }
+    
+    .file-input-button.has-file {
+      border-color: #28a745;
+      background-color: #f0fff4;
+    }
+    
+    .file-name {
+      display: block;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .file-name.selected {
+      color: #28a745;
+      font-weight: 600;
+    }
+    
+    .help-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    
+    .warning-box {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .warning-box h4 {
+      margin: 0 0 10px 0;
+      color: #856404;
+      font-size: 16px;
+    }
+    
+    .warning-box ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .warning-box li {
+      margin-bottom: 5px;
+      color: #856404;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: flex-end;
+    }
+    
+    .progress-section {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .progress-section.active {
+      display: block;
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .progress-status {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .progress-count {
+      font-size: 16px;
+      color: #666;
+    }
+    
+    .progress-bar-container {
+      height: 30px;
+      background-color: #e9ecef;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #007bff, #0056b3);
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .results-table {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .results-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .results-table th,
+    .results-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .results-table th {
+      background-color: #f1f3f5;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .status-badge.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-badge.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status-badge.processing {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .error-message {
+      font-size: 13px;
+      color: #dc3545;
+    }
+  </style>
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- 戻るボタン -->
+      <div style="margin-bottom: 20px;">
+        <a href="/admin/bookings" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> 予約一覧に戻る
+        </a>
+      </div>
+
+      <!-- 説明 -->
+      <div class="card-header">
+        <h2 class="card-title">帳票一括生成</h2>
+      </div>
+
+      <p style="margin-bottom: 20px; color: #666;">
+        Excelテンプレートと予約番号のCSVファイルをアップロードして、複数の予約の帳票（領収書など）をPDFで一括生成できます。
+      </p>
+
+      <!-- 注意事項 -->
+      <div class="warning-box">
+        <h4><i class="fas fa-exclamation-triangle"></i> 実行前の注意事項</h4>
+        <ul>
+          <li>大量の帳票を生成する場合、処理に時間がかかることがあります</li>
+          <li>予約番号CSVは1列目に予約番号を記載してください（ヘッダー行含む）</li>
+          <li>Excelテンプレートには <code>{{booking_number}}</code> などのプレースホルダーを使用してください</li>
+          <li>明細行には <code>{{items.item_name}}</code> などを使用すると自動的に繰り返されます</li>
+          <li>生成されたPDFは各予約の添付ファイルに自動的に紐付けられます</li>
+        </ul>
+      </div>
+
+      <!-- アップロードセクション -->
+      <form id="uploadForm" class="upload-section">
+        <!-- Excelテンプレート -->
+        <div class="file-input-group">
+          <label for="excelTemplate">
+            <i class="fas fa-file-excel"></i> Excelテンプレート（必須）
+          </label>
+          <div class="file-input-wrapper">
+            <input type="file" id="excelTemplate" accept=".xlsx,.xls" required>
+            <label for="excelTemplate" class="file-input-button" id="excelTemplateButton">
+              <i class="fas fa-cloud-upload-alt"></i> ファイルを選択
+            </label>
+          </div>
+          <span class="file-name" id="excelTemplateName">ファイルが選択されていません</span>
+          <p class="help-text">
+            領収書や請求書のExcelテンプレートをアップロードしてください。<br>
+            対応形式: .xlsx, .xls
+          </p>
+        </div>
+
+        <!-- 予約番号CSV -->
+        <div class="file-input-group">
+          <label for="bookingCsv">
+            <i class="fas fa-file-csv"></i> 予約番号CSV（必須）
+          </label>
+          <div class="file-input-wrapper">
+            <input type="file" id="bookingCsv" accept=".csv" required>
+            <label for="bookingCsv" class="file-input-button" id="bookingCsvButton">
+              <i class="fas fa-cloud-upload-alt"></i> ファイルを選択
+            </label>
+          </div>
+          <span class="file-name" id="bookingCsvName">ファイルが選択されていません</span>
+          <p class="help-text">
+            帳票を生成したい予約番号を記載したCSVファイルをアップロードしてください。<br>
+            フォーマット: 1列目に予約番号（例: BK20260209-001）<br>
+            ヘッダー行は含めても含めなくてもOKです。
+          </p>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="action-buttons">
+          <button type="button" id="cancelBtn" class="btn btn-secondary">
+            <i class="fas fa-times"></i> キャンセル
+          </button>
+          <button type="submit" id="generateBtn" class="btn btn-primary" disabled>
+            <i class="fas fa-cogs"></i> 一括生成開始
+          </button>
+        </div>
+      </form>
+
+      <!-- 進捗表示セクション -->
+      <div id="progressSection" class="progress-section">
+        <div class="progress-header">
+          <div class="progress-status">
+            <i class="fas fa-spinner fa-spin"></i> 処理中...
+          </div>
+          <div class="progress-count">
+            <span id="progressCurrent">0</span> / <span id="progressTotal">0</span> 件完了
+          </div>
+        </div>
+        
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar" style="width: 0%;">
+            0%
+          </div>
+        </div>
+
+        <!-- 処理結果テーブル -->
+        <div class="results-table">
+          <table>
+            <thead>
+              <tr>
+                <th>予約番号</th>
+                <th>ステータス</th>
+                <th>生成ファイル名</th>
+                <th>エラー詳細</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+              <!-- 動的に追加 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-bulk-documents.js"></script>
+</body>
+</html>

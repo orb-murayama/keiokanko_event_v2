@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>申込フォーム設定 | 管理画面</title>
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container mt-4 mb-6">
+    <!-- ローディング表示 -->
+    <div id="loading" class="text-center py-8 hidden">
+      <div class="spinner"></div>
+      <p class="mt-3">読み込み中...</p>
+    </div>
+
+    <!-- エラーメッセージ -->
+    <div id="errorMessage" class="error-message hidden"></div>
+
+    <!-- フォーム設定 -->
+    <div class="admin-card">
+      <div class="mb-6">
+        <h2 class="text-2xl fw-bold mb-2">
+          <i class="fas fa-edit"></i> 申込情報入力欄の設定
+        </h2>
+        <p class="text-secondary">
+          イベント申込時にユーザーが入力する項目を設定できます。<br>
+          項目の追加、削除、並び替えが可能です。
+        </p>
+      </div>
+
+      <form id="formFieldsForm">
+        <input type="hidden" id="eventId">
+        
+        <!-- フィールドコンテナ -->
+        <div id="formFieldsContainer" class="mb-4">
+          <!-- フィールドが動的に追加されます -->
+        </div>
+
+        <!-- フィールド追加ボタン -->
+        <div class="mb-6">
+          <button type="button" id="addFieldBtn" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i>
+            フィールドを追加
+          </button>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="admin-form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i>
+            保存
+          </button>
+          <a href="/admin/events" class="btn btn-secondary">
+            <i class="fas fa-times"></i>
+            キャンセル
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- JavaScriptモジュール -->
+  <script type="module" src="/static/js/pages/admin.js"></script>
+  <script type="module" src="/static/js/pages/admin-form-fields.js"></script>
+</body>
+</html>

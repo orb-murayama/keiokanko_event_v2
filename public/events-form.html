@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>イベント登録・編集 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css?v=20260217-005">
+  <link rel="stylesheet" href="/static/css/variables.css?v=20260217-005">
+  <link rel="stylesheet" href="/static/css/components.css?v=20260217-005">
+  <link rel="stylesheet" href="/static/css/admin.css?v=20260217-010">
+  <link rel="stylesheet" href="/static/css/utilities.css?v=20260217-005">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+  
+  <!-- 担当者選択UI用スタイル -->
+  <style>
+    /* タグコンテナ */
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* 選択済みタグ */
+    .staff-tag {
+      display: inline-flex;
+      align-items: center;
+      background: #3b82f6;
+      color: white;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      gap: 0.5rem;
+    }
+
+    .staff-tag-remove {
+      cursor: pointer;
+      font-weight: bold;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .staff-tag-remove:hover {
+      opacity: 1;
+    }
+
+    /* スタッフリスト */
+    .staff-list-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s;
+    }
+
+    .staff-list-item:hover {
+      background-color: #f3f4f6;
+    }
+
+    .staff-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .staff-list-item.selected {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .staff-list-item .staff-name {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .staff-list-item .staff-branch {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .staff-list-item .staff-check {
+      color: #3b82f6;
+      font-size: 1.125rem;
+    }
+
+    /* ローディングスピナー - 落ち着いた表示 */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      color: #9ca3af;
+    }
+    
+    #loading.hidden {
+      display: none !important;
+    }
+
+    #loading p {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid #f3f4f6;
+      border-top-color: #9ca3af;
+      border-radius: 50%;
+      animation: spin 1.5s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- ローディング表示 -->
+      <div id="loading">
+        <div class="spinner"></div>
+        <p>読み込み中...</p>
+      </div>
+
+      <!-- エラーメッセージ -->
+      <div id="errorMessage" class="hidden"></div>
+
+      <!-- 成功メッセージ -->
+      <div id="successMessage" class="hidden"></div>
+
+      <!-- フォームコンテナ（JSで動的生成） -->
+      <div id="eventFormContainer" style="display: none;"></div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2024 イベント予約管理システム. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js?v=20260127-2"></script>
+  <script src="/static/js/modules/utils.js?v=20260127-2"></script>
+  <script src="/static/js/pages/admin.js?v=20260217-001"></script>
+  <script src="/static/js/pages/admin-event-form.js?v=20260318-002"></script>
+  <script>
+    // 支店管理者の公開設定フィールド制御
+    (function() {
+      // admin-auth.jsがロードされるまで待機
+      function waitForAuth() {
+        return new Promise((resolve) => {
+          if (window.currentAdminUser) {
+            resolve();
+          } else {
+            // adminAuthReadyイベントを待つ
+            document.addEventListener('adminAuthReady', function(e) {
+              resolve();
+            }, { once: true });
+            
+            // 5秒待ってもロードされなければ続行（権限制限なし）
+            setTimeout(resolve, 5000);
+          }
+        });
+      }
+      
+      waitForAuth().then(() => {
+        const currentUserRole = window.currentAdminUser?.role;
+        console.log('🔐 [Events Form] Current user role:', currentUserRole);
+        console.log('🔐 [Events Form] Current user:', window.currentAdminUser);
+        
+        if (currentUserRole === 'branch') {
+        // DOMが完全に読み込まれるまで待機
+        const observer = new MutationObserver((mutations, obs) => {
+          const enableFlgField = document.querySelector('[name="enable_flg"]');
+          if (enableFlgField) {
+            enableFlgField.disabled = true;
+            enableFlgField.style.cursor = 'not-allowed';
+            enableFlgField.style.opacity = '0.6';
+            
+            // ラベルに注意書きを追加
+            const label = enableFlgField.closest('.form-group')?.querySelector('.form-label');
+            if (label && !label.querySelector('.permission-note')) {
+              label.insertAdjacentHTML('beforeend', 
+                '<span class="permission-note" style="color: #f59e0b; font-size: 0.875rem; margin-left: 0.5rem;">' +
+                '<i class="fas fa-lock"></i> 公開設定の変更権限がありません' +
+                '</span>'
+              );
+            }
+            
+            obs.disconnect();
+          }
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+        // 5秒後にオブザーバーを停止
+        setTimeout(() => observer.disconnect(), 5000);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

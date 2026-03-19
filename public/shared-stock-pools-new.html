@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規プール登録 | 管理画面</title>
+  <meta name="description" content="共有在庫プール新規登録 - イベント予約管理システム">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/reset.css?v=20260311">
+  <link rel="stylesheet" href="/css/variables.css?v=20260311">
+  <link rel="stylesheet" href="/css/components.css?v=20260311">
+  <link rel="stylesheet" href="/css/admin.css?v=20260311">
+  <link rel="stylesheet" href="/css/utilities.css?v=20260311">
+  
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="admin-main">
+    <div class="container">
+      <!-- パンくず -->
+      <nav class="breadcrumb">
+        <a href="/admin">管理画面</a>
+        <span class="separator">&gt;</span>
+        <a href="/shared-stock-pools-list.html">共有在庫プール管理</a>
+        <span class="separator">&gt;</span>
+        <span>新規プール登録</span>
+      </nav>
+
+      <!-- 新規登録フォーム -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-plus-circle"></i>
+            プール情報入力
+          </h2>
+        </div>
+        <div class="card-body">
+          <form id="newPoolForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="poolName" class="form-label required">プール名</label>
+                <input type="text" id="poolName" name="poolName" class="form-input" 
+                       required placeholder="例: 長岡花火大会2025 マス席">
+              </div>
+              <div class="form-group">
+                <label for="poolCode" class="form-label">プールコード</label>
+                <input type="text" id="poolCode" name="poolCode" class="form-input" 
+                       placeholder="例: NAGAOKA2025">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="description" class="form-label">説明</label>
+              <textarea id="description" name="description" class="form-input" 
+                        rows="3" placeholder="プールの説明を入力してください"></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dateStart" class="form-label required">開始日</label>
+                <input type="date" id="dateStart" name="dateStart" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="dateEnd" class="form-label">終了日 <span class="text-muted text-sm">(省略可)</span></label>
+                <input type="date" id="dateEnd" name="dateEnd" class="form-input">
+                <small class="form-helper">
+                  <i class="fas fa-info-circle"></i>
+                  終了日を指定すると、期間内の在庫を一括作成できます
+                </small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="timeSlotLabel" class="form-label">在庫名</label>
+              <input type="text" id="timeSlotLabel" name="timeSlotLabel" class="form-input" 
+                     placeholder="例: 午前、1日ツアー">
+              <small class="form-helper">
+                <i class="fas fa-info-circle"></i>
+                時間帯やセッション名などを入力してください
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="totalStock" class="form-label required">総在庫数</label>
+              <input type="number" id="totalStock" name="totalStock" class="form-input" 
+                     required min="0" placeholder="50">
+            </div>
+
+            <div class="form-actions">
+              <a href="/shared-stock-pools-list.html" class="btn btn-secondary">
+                <i class="fas fa-times"></i>
+                キャンセル
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                登録
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2025 イベント予約管理システム</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/js/modules/api.js?v=20260311"></script>
+  <script src="/js/modules/utils.js?v=20260311"></script>
+  <script src="/js/pages/admin.js?v=20260311"></script>
+  <script src="/js/pages/admin-shared-stock-pools-new.js?v=20260311"></script>
+</body>
+</html>

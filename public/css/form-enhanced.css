@@ -1,0 +1,654 @@
+/**
+ * Enhanced Form Styles
+ * UI/UX改善版 - フォーム要素の統一感とアクセシビリティ向上
+ * 
+ * 【改善点】
+ * - カードUI（背景+影）
+ * - フォーム要素の統一感
+ * - focus時の視認性強化
+ * - エラーメッセージの見栄え改善
+ * - ボタンの魅力的なデザイン
+ * - レスポンシブ対応
+ */
+
+/* ========================================
+   Form Container - カードUI
+   ======================================== */
+
+.admin-card,
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+  transition: box-shadow var(--transition-base);
+}
+
+.admin-card:hover,
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Form within card */
+.admin-card form,
+.card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+/* ========================================
+   Form Group - ラベルと入力欄のセット
+   ======================================== */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+/* ========================================
+   Labels - 視認性とアクセシビリティ
+   ======================================== */
+
+.form-label,
+.admin-label,
+label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-2);
+  letter-spacing: 0.025em;
+  line-height: var(--line-height-normal);
+}
+
+/* Required indicator */
+.form-label .text-danger,
+.admin-label .text-danger,
+label .text-danger {
+  color: var(--color-danger);
+  margin-left: var(--spacing-1);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Helper text */
+.form-help-text,
+.text-muted {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: var(--spacing-1);
+  line-height: var(--line-height-normal);
+}
+
+/* ========================================
+   Input Fields - 統一感のあるデザイン
+   ======================================== */
+
+.form-control,
+.admin-input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-base);
+  transition: all var(--transition-base);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* Hover state */
+.form-control:hover,
+.admin-input:hover,
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: var(--color-primary-light);
+}
+
+/* Focus state - アクセシビリティ強化 */
+.form-control:focus,
+.admin-input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  background-color: var(--color-primary-50);
+}
+
+/* Disabled state */
+.form-control:disabled,
+.admin-input:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background-color: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Placeholder */
+.form-control::placeholder,
+.admin-input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ========================================
+   Textarea - 複数行入力
+   ======================================== */
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ========================================
+   Select - ドロップダウン
+   ======================================== */
+
+select {
+  padding-right: var(--spacing-10);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right var(--spacing-3) center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  cursor: pointer;
+}
+
+select:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%232563eb' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* ========================================
+   Checkbox & Radio - カスタムスタイル
+   ======================================== */
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: var(--spacing-2);
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+input[type="checkbox"] {
+  border-radius: var(--radius-sm);
+}
+
+input[type="radio"] {
+  border-radius: var(--radius-full);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Checkbox/Radio label wrapper */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) 0;
+}
+
+.form-check label {
+  margin: 0;
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ========================================
+   File Input - アップロード
+   ======================================== */
+
+input[type="file"] {
+  padding: var(--spacing-3);
+  border: 2px dashed var(--border-color);
+  background-color: var(--color-gray-50);
+  cursor: pointer;
+}
+
+input[type="file"]:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-50);
+}
+
+input[type="file"]:focus {
+  border-style: solid;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* ========================================
+   Buttons - 押したくなるデザイン
+   ======================================== */
+
+.btn,
+button[type="submit"],
+button[type="button"],
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-base);
+  transition: all var(--transition-base);
+  font-family: var(--font-family-base);
+}
+
+/* Primary Button */
+.btn-primary,
+button[type="submit"] {
+  color: var(--text-white);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover,
+button[type="submit"]:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active,
+button[type="submit"]:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:focus,
+button[type="submit"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border-color: var(--border-color-dark);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-gray-100);
+  border-color: var(--color-gray-400);
+  transform: translateY(-1px);
+}
+
+/* Success Button */
+.btn-success {
+  color: var(--text-white);
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.btn-success:hover {
+  background-color: var(--color-success-dark);
+  border-color: var(--color-success-dark);
+  transform: translateY(-1px);
+}
+
+/* Danger Button */
+.btn-danger {
+  color: var(--text-white);
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--color-danger-dark);
+  border-color: var(--color-danger-dark);
+  transform: translateY(-1px);
+}
+
+/* Button sizes */
+.btn-sm {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-sm);
+}
+
+.btn-lg {
+  padding: var(--spacing-4) var(--spacing-8);
+  font-size: var(--font-size-lg);
+}
+
+/* Disabled button */
+.btn:disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ========================================
+   Form Actions - ボタングループ
+   ======================================== */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--border-color);
+}
+
+.form-actions.centered {
+  justify-content: center;
+}
+
+/* ========================================
+   Error & Success Messages
+   ======================================== */
+
+.alert {
+  padding: var(--spacing-4);
+  border-radius: var(--radius-base);
+  margin-bottom: var(--spacing-4);
+  border-left: 4px solid;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+}
+
+.alert i {
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-success {
+  background-color: #d1fae5;
+  border-color: var(--color-success);
+  color: #065f46;
+}
+
+.alert-danger,
+.alert-error {
+  background-color: #fee2e2;
+  border-color: var(--color-danger);
+  color: #991b1b;
+}
+
+.alert-warning {
+  background-color: #fef3c7;
+  border-color: var(--color-warning);
+  color: #92400e;
+}
+
+.alert-info {
+  background-color: #dbeafe;
+  border-color: var(--color-info);
+  color: #1e40af;
+}
+
+/* Inline error messages */
+.error-message,
+.invalid-feedback {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin-top: var(--spacing-1);
+  padding-left: var(--spacing-1);
+}
+
+.error-message i,
+.invalid-feedback i {
+  margin-right: var(--spacing-1);
+}
+
+/* Input error state */
+.form-control.is-invalid,
+.admin-input.is-invalid,
+input.is-invalid,
+textarea.is-invalid,
+select.is-invalid {
+  border-color: var(--color-danger);
+  background-color: #fef2f2;
+}
+
+.form-control.is-invalid:focus,
+.admin-input.is-invalid:focus,
+input.is-invalid:focus,
+textarea.is-invalid:focus,
+select.is-invalid:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+/* ========================================
+   Card Header & Body
+   ======================================== */
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-5);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.card-header h2,
+.card-header h3 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.card-header h2 i,
+.card-header h3 i {
+  color: var(--color-primary);
+  font-size: var(--font-size-2xl);
+}
+
+.card-body {
+  padding: 0;
+}
+
+/* ========================================
+   Loading State
+   ======================================== */
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--text-white);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+  .admin-card,
+  .card {
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-control,
+  .admin-input,
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* iOS zoom prevention */
+  }
+
+  .btn,
+  button {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* ========================================
+   Accessibility Improvements
+   ======================================== */
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  padding: var(--spacing-3);
+  background-color: var(--color-primary);
+  color: var(--text-white);
+  text-decoration: none;
+  z-index: var(--z-tooltip);
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+  .admin-card,
+  .card {
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+  }
+
+  .btn,
+  button {
+    display: none;
+  }
+
+  .form-actions {
+    display: none;
+  }
+}

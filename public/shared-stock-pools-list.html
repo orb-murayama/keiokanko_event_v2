@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>共有在庫プール管理 | 管理画面</title>
+  <link rel="stylesheet" href="/css/reset.css?v=20260311">
+  <link rel="stylesheet" href="/css/variables.css?v=20260311">
+  <link rel="stylesheet" href="/css/components.css?v=20260311">
+  <link rel="stylesheet" href="/css/admin.css?v=20260311">
+  <link rel="stylesheet" href="/css/utilities.css?v=20260311">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- 管理画面認証チェック -->
+  <script src="/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-content">
+      <!-- ページタイトル -->
+      <div class="page-header">
+        <h2 class="page-title">共有在庫プール一覧</h2>
+        <div class="page-actions">
+          <a href="/shared-stock-pools-new.html" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            新規プール登録
+          </a>
+        </div>
+      </div>
+
+      <!-- プール一覧 -->
+      <div class="admin-card">
+        <!-- ローディング -->
+        <div id="loading" class="loading-state">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>読み込み中...</p>
+        </div>
+
+        <!-- エラー表示 -->
+        <div id="error" class="error-state" style="display: none;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p id="errorMessage">データの取得に失敗しました</p>
+        </div>
+
+        <!-- テーブル -->
+        <div id="poolsTableContainer" class="table-container" style="display: none;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>プール名</th>
+                <th>日付範囲</th>
+                <th class="text-right">総在庫</th>
+                <th class="text-right">予約済</th>
+                <th class="text-right">利用可能</th>
+                <th class="text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="poolsTableBody">
+              <!-- JavaScriptで動的生成 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 説明 -->
+      <div class="info-box">
+        <div class="info-box-header">
+          <i class="fas fa-info-circle"></i>
+          <h3>共有在庫プールとは？</h3>
+        </div>
+        <p>
+          複数の商品やオプションで共通の在庫を管理する仕組みです。例えば、バスの座席や駐車場など、物理的に同じリソースを複数の商品・プランで販売する場合に使用します。
+        </p>
+        <p style="margin-top: 0.5rem;">
+          <strong>日付範囲指定：</strong>開始日と終了日を指定すると、その期間のプールを一括登録できます。
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2025 イベント予約管理システム</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/js/modules/api.js?v=20260311"></script>
+  <script src="/js/modules/utils.js?v=20260311"></script>
+  <script src="/js/pages/admin.js?v=20260311"></script>
+  <script src="/js/pages/admin-shared-stock-pools.js?v=20260311"></script>
+</body>
+</html>

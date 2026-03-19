@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>決済処理中 | イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* ローディング */
+        .loading-container {
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #6366f1;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .loading-subtext {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* エラー表示 */
+        .error-container {
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .error-container.show {
+            display: block;
+        }
+        .error-icon {
+            font-size: 4rem;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .error-message {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .error-button {
+            display: inline-block;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .error-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- ローディング -->
+            <div class="loading-container" v-if="!hasError">
+                <div class="spinner"></div>
+                <div class="loading-text">決済情報を処理しています...</div>
+                <div class="loading-subtext">
+                    このページを閉じずにお待ちください。<br>
+                    処理が完了すると自動的にページが切り替わります。
+                </div>
+            </div>
+            
+            <!-- エラー表示 -->
+            <div class="error-container" :class="{ show: hasError }">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="error-title">決済処理でエラーが発生しました</div>
+                <div class="error-message">{{ errorMessage }}</div>
+                <a href="/product-detail" class="error-button">
+                    <i class="fas fa-home"></i> トップページへ戻る
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    hasError: false,
+                    errorMessage: ''
+                };
+            },
+            methods: {
+                async processCallback() {
+                    try {
+                        // URLクエリパラメータを取得
+                        const urlParams = new URLSearchParams(window.location.search);
+                        
+                        // POSTボディのパラメータも取得（GMOがPOSTで送る場合）
+                        let postParams = new URLSearchParams();
+                        if (document.body.textContent) {
+                            try {
+                                postParams = new URLSearchParams(document.body.textContent);
+                            } catch (e) {
+                                // POSTボディがない、またはパースできない場合は無視
+                            }
+                        }
+                        
+                        // URLパラメータとPOSTパラメータをマージ（URLパラメータを優先）
+                        const allParams = new Map();
+                        for (const [key, value] of postParams.entries()) {
+                            allParams.set(key, value);
+                        }
+                        for (const [key, value] of urlParams.entries()) {
+                            allParams.set(key, value);
+                        }
+                        
+                        console.log('🔔 GMOコールバック受信 (URL):', Object.fromEntries(urlParams.entries()));
+                        console.log('🔔 GMOコールバック受信 (POST):', Object.fromEntries(postParams.entries()));
+                        console.log('🔔 GMOコールバック受信 (統合):', Object.fromEntries(allParams.entries()));
+                        
+                        // GMOのgmo_detailsパラメータを処理（Base64エンコード）
+                        const gmoDetailsBase64 = allParams.get('gmo_details');
+                        let gmoDetails = null;
+                        
+                        if (gmoDetailsBase64) {
+                            try {
+                                console.log('📬 GMO gmo_detailsパラメータ受信（長さ:', gmoDetailsBase64.length, '）');
+                                
+                                // Base64デコード
+                                const decodedJson = atob(gmoDetailsBase64);
+                                gmoDetails = JSON.parse(decodedJson);
+                                
+                                console.log('🔓 GMO gmo_detailsパラメータをデコード:', gmoDetails);
+                            } catch (e) {
+                                console.error('⚠️ GMO gmo_detailsパラメータのデコードに失敗:', e);
+                            }
+                        }
+                        
+                        // resultパラメータも確認（フォールバック）
+                        if (!gmoDetails) {
+                            const resultParam = allParams.get('result');
+                            if (resultParam) {
+                                try {
+                                    console.log('📬 GMO resultパラメータ受信（長さ:', resultParam.length, '）');
+                                    
+                                    // resultパラメータは "base64data.signature" の形式
+                                    const [base64Data, signature] = resultParam.split('.');
+                                    
+                                    // Base64デコード
+                                    const decodedJson = atob(base64Data);
+                                    gmoDetails = JSON.parse(decodedJson);
+                                    
+                                    console.log('🔓 GMO resultパラメータをデコード:', gmoDetails);
+                                } catch (e) {
+                                    console.error('⚠️ GMO resultパラメータのデコードに失敗:', e);
+                                }
+                            }
+                        }
+                        
+                        // GMOから渡されるパラメータ
+                        const status = allParams.get('status'); // 自サイト側で渡したパラメータ
+                        let OrderID = allParams.get('OrderID'); // URLから取得
+                        const errCode = allParams.get('errCode'); // エラーコード
+                        const errInfo = allParams.get('errInfo'); // エラー情報
+                        
+                        // gmo_detailsから情報を取得
+                        let AccessID = null;
+                        let AccessPass = null;
+                        let TranID = null;
+                        let TranDate = null;
+                        let PayType = null;
+                        
+                        if (gmoDetails?.transactionresult) {
+                            AccessID = gmoDetails.transactionresult.AccessID;
+                            AccessPass = gmoDetails.transactionresult.AccessPass;
+                            OrderID = gmoDetails.transactionresult.OrderID || OrderID;
+                            TranID = gmoDetails.credit?.TranID;
+                            TranDate = gmoDetails.credit?.TranDate;
+                            PayType = gmoDetails.transactionresult.Paymethod;
+                            
+                            console.log('✅ gmo_detailsから情報を抽出:', {
+                                AccessID: AccessID ? '***' : null,
+                                AccessPass: AccessPass ? '***' : null,
+                                OrderID,
+                                TranID,
+                                PayType
+                            });
+                        }
+                        
+                        // 従来の方法（URLパラメータ）もフォールバック
+                        if (!AccessID) AccessID = allParams.get('AccessID');
+                        if (!AccessPass) AccessPass = allParams.get('AccessPass');
+                        if (!TranID) TranID = allParams.get('TranID');
+                        if (!TranDate) TranDate = allParams.get('TranDate');
+                        if (!PayType) PayType = allParams.get('PayType');
+                        
+                        console.log('🔑 GMO認証情報:', {
+                            has_AccessID: !!AccessID,
+                            has_AccessPass: !!AccessPass,
+                            OrderID,
+                            TranID,
+                            PayType
+                        });
+                        
+                        // キャンセルされた場合（アラート表示なし）
+                        if (status === 'cancel') {
+                            window.location.href = '/payment-method';
+                            return;
+                        }
+                        
+                        // エラーが発生した場合
+                        if (errCode) {
+                            throw new Error(`GMO決済エラー: ${errCode} - ${errInfo || '詳細不明'}`);
+                        }
+                        
+                        // 予約番号（OrderID）が必須
+                        if (!OrderID) {
+                            throw new Error('予約番号が取得できません。受信パラメータ: ' + JSON.stringify(Object.fromEntries(allParams.entries())));
+                        }
+                        
+                        console.log('✅ 決済成功 - Order ID:', OrderID);
+                        
+                        // LocalStorageから予約データを取得
+                        const bookingDraftStr = localStorage.getItem('bookingDraft');
+                        const tempOrderId = localStorage.getItem('tempOrderId');
+                        
+                        if (!bookingDraftStr) {
+                            throw new Error('予約データが見つかりません。最初からやり直してください。');
+                        }
+                        
+                        const bookingData = JSON.parse(bookingDraftStr);
+                        console.log('💾 予約データ取得:', bookingData);
+                        console.log('🔖 一時注文ID:', tempOrderId);
+                        
+                        // PayTypeをpayment_methodに変換
+                        const payType = PayType || allParams.get('PayType') || bookingData.payment_method || 'credit';
+                        let paymentMethod = payType;
+                        
+                        // GMOのPayType形式からシステム内部形式に変換
+                        if (payType === 'cvs') {
+                            paymentMethod = 'convenience';
+                        } else if (payType === 'credit' || payType === 'Credit') {
+                            paymentMethod = 'credit_card';
+                        }
+                        
+                        console.log('💳 決済方法:', { payType, paymentMethod });
+                        
+                        // 決済完了後に予約を作成
+                        const createBookingData = {
+                            ...bookingData,
+                            temp_order_id: tempOrderId,
+                            gmo_order_id: OrderID,
+                            payment_method: paymentMethod,
+                            gmo_details: gmoDetails  // GMO詳細情報を追加
+                        };
+                        
+                        console.log('📤 予約作成API呼び出し:', createBookingData);
+                        
+                        const response = await axios.post('/api/v2/bookings/create-from-payment', createBookingData);
+                        
+                        if (response.data.success) {
+                            console.log('✅ 予約作成成功:', response.data.booking_number, 'booking_id:', response.data.booking_id);
+                            
+                            // クレジット決済完了メールを送信（非同期、エラーは無視）
+                            if (paymentMethod === 'credit_card') {
+                                axios.post('/api/emails/send-notification', {
+                                    booking_number: response.data.booking_number,
+                                    notification_type: 'payment_completed'
+                                }).catch(error => {
+                                    console.error('決済完了メール送信エラー:', error);
+                                    // メール送信失敗しても予約完了画面へ遷移
+                                });
+                            }
+                            
+                            // LocalStorageをクリア
+                            localStorage.removeItem('bookingDraft');
+                            localStorage.removeItem('tempOrderId');
+                            
+                            // 予約完了ページへリダイレクト（booking_idを含める）
+                            window.location.href = `/booking-complete?booking_number=${response.data.booking_number}&booking_id=${response.data.booking_id}`;
+                        } else {
+                            throw new Error('予約の作成に失敗しました: ' + (response.data.error || ''));
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ Payment callback error:', error);
+                        console.error('❌ Error response:', error.response?.data);
+                        console.error('❌ Error status:', error.response?.status);
+                        this.hasError = true;
+                        
+                        // エラーメッセージを詳細に表示
+                        let errorMsg = error.message || '決済処理中にエラーが発生しました。';
+                        if (error.response?.data) {
+                            const data = error.response.data;
+                            if (data.error) {
+                                errorMsg = data.error;
+                            }
+                            if (data.details) {
+                                errorMsg += '\n詳細: ' + (typeof data.details === 'string' ? data.details : JSON.stringify(data.details));
+                            }
+                        }
+                        
+                        this.errorMessage = errorMsg + '\n\nお手数ですが、最初からやり直してください。';
+                    }
+                }
+            },
+            mounted() {
+                // 1秒後に処理を開始（ローディング表示のため）
+                setTimeout(() => {
+                    this.processCallback();
+                }, 1000);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+id,booking_number,customer_id,event_id,status,booker_name,booker_email,booker_phone,additional_info,remarks,created_at,modified_at
+2,BK20260209-002,2,1,active,佐藤 花子,sato.hanako@example.com,080-2345-6789,null,null,2026-02-06 04:24:50,2026-02-09 04:24:50

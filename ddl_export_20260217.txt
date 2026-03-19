@@ -1,0 +1,137 @@
+
+ ⛅️ wrangler 4.49.0 (update available 4.65.0)
+─────────────────────────────────────────────
+Resource location: local 
+
+Use --remote if you want to access the remote instance.
+
+🌀 Executing on local database webapp-production (local-only-for-now) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "sql": "CREATE TABLE _cf_METADATA (\n        key INTEGER PRIMARY KEY,\n        value BLOB\n      )"
+      },
+      {
+        "sql": "CREATE TABLE accounts (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  login_id TEXT UNIQUE NOT NULL,\n  password TEXT NOT NULL,\n  person_name TEXT NOT NULL,\n  email TEXT NOT NULL,\n  client_id INTEGER,\n  role TEXT NOT NULL,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  account_type TEXT DEFAULT 'keio',\n  primary_branch_code TEXT,\n  accessible_branches TEXT,\n  expiration_date TEXT DEFAULT NULL,\n  tel TEXT DEFAULT NULL,\n  mobile TEXT DEFAULT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE booking_emails (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_number TEXT NOT NULL,\n  from_email TEXT NOT NULL,\n  to_email TEXT NOT NULL,\n  bcc_email TEXT,\n  subject TEXT NOT NULL,\n  body TEXT NOT NULL,\n  scheduled_send_at DATETIME NOT NULL,\n  send_status TEXT DEFAULT 'pending',\n  sent_at DATETIME,\n  error_message TEXT,\n  template_id INTEGER,\n  created_at DATETIME DEFAULT (datetime('now', 'localtime')),\n  modified_at DATETIME DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (template_id) REFERENCES email_templates(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE booking_files (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_number TEXT NOT NULL,\n  file_key TEXT NOT NULL,\n  original_filename TEXT NOT NULL,\n  display_filename TEXT NOT NULL,\n  file_size INTEGER NOT NULL,\n  download_limit INTEGER DEFAULT 0,\n  download_count INTEGER DEFAULT 0,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (booking_number) REFERENCES bookings(booking_number)\n)"
+      },
+      {
+        "sql": "CREATE TABLE booking_items (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_id INTEGER NOT NULL,\n  payment_id INTEGER,\n  \n  \n  item_type TEXT NOT NULL,\n  item_id INTEGER NOT NULL,\n  item_name TEXT NOT NULL,\n  stock_id INTEGER,\n  price_category TEXT,\n  \n  \n  quantity INTEGER DEFAULT 1,\n  unit_price INTEGER NOT NULL,\n  subtotal INTEGER NOT NULL,\n  \n  \n  participation_date TEXT,\n  \n  \n  participants TEXT,\n  \n  \n  status TEXT DEFAULT 'active',\n  canceled_at TEXT,\n  cancel_reason TEXT,\n  refund_amount INTEGER DEFAULT 0,\n  \n  \n  item_details TEXT,\n  remarks TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  \n  FOREIGN KEY (booking_id) REFERENCES bookings(id),\n  FOREIGN KEY (payment_id) REFERENCES booking_payments(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE booking_messages (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_id INTEGER NOT NULL,\n  booking_number TEXT NOT NULL,\n  recipient_email TEXT NOT NULL,\n  title TEXT NOT NULL,\n  message TEXT NOT NULL,\n  scheduled_send_at TEXT NOT NULL,\n  sent_at TEXT,\n  send_status TEXT DEFAULT 'pending',\n  display_on_mypage INTEGER DEFAULT 1,\n  created_by TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (booking_id) REFERENCES bookings(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE booking_payments (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_number TEXT NOT NULL,\n  payment_number TEXT UNIQUE NOT NULL,\n  \n  \n  payment_type TEXT NOT NULL DEFAULT 'immediate',\n  payment_method TEXT NOT NULL,\n  payment_status TEXT DEFAULT 'pending',\n  \n  \n  amount INTEGER NOT NULL,\n  refunded_amount INTEGER DEFAULT 0,\n  net_amount INTEGER GENERATED ALWAYS AS (amount - refunded_amount) STORED,\n  \n  \n  payment_date TEXT,\n  payment_due_date TEXT,\n  refund_date TEXT,\n  \n  \n  payment_transaction_id TEXT,\n  payment_details TEXT,\n  \n  remarks TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  \n  FOREIGN KEY (booking_number) REFERENCES bookings(booking_number)\n)"
+      },
+      {
+        "sql": "CREATE TABLE bookings (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_number TEXT UNIQUE NOT NULL,\n  customer_id INTEGER NOT NULL,\n  event_id INTEGER NOT NULL,\n  status TEXT DEFAULT 'active',\n  \n  \n  booker_name TEXT,\n  booker_email TEXT,\n  booker_phone TEXT,\n  \n  \n  additional_info TEXT,\n  remarks TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  \n  FOREIGN KEY (customer_id) REFERENCES customers(id),\n  FOREIGN KEY (event_id) REFERENCES events(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE branches (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  branch_code TEXT UNIQUE NOT NULL,\n  branch_name TEXT NOT NULL,\n  branch_full_name TEXT NOT NULL,\n  display_order INTEGER DEFAULT 0,\n  enable_flg INTEGER DEFAULT 1,\n  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  modified_at DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+      },
+      {
+        "sql": "CREATE TABLE categories (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  slug TEXT UNIQUE,\n  description TEXT,\n  parent_id INTEGER,\n  display_order INTEGER DEFAULT 0,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE clients (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  contactable_person TEXT,\n  branch_office TEXT,\n  accounted_person TEXT,\n  zip TEXT,\n  pref_id INTEGER,\n  addr TEXT,\n  tel TEXT NOT NULL,\n  fax TEXT,\n  email TEXT UNIQUE NOT NULL,\n  password TEXT NOT NULL,\n  remarks TEXT,\n  reg_flg INTEGER DEFAULT 1,\n  group_id INTEGER NOT NULL DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  client_code TEXT,\n  position TEXT\n)"
+      },
+      {
+        "sql": "CREATE TABLE customers (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  family_name TEXT,\n  first_name TEXT,\n  family_kana TEXT,\n  first_kana TEXT,\n  sex INTEGER,\n  birth TEXT,\n  mobile TEXT,\n  tel TEXT,\n  fax TEXT,\n  email TEXT,\n  zip TEXT,\n  pref_id INTEGER,\n  city TEXT,\n  addr TEXT,\n  bldg TEXT,\n  password TEXT,\n  payment TEXT,\n  answer TEXT,\n  remark TEXT,\n  mailme_flg INTEGER DEFAULT 0,\n  contact TEXT,\n  company_name TEXT,\n  department_name TEXT,\n  free1 TEXT,\n  free2 TEXT,\n  free3 TEXT,\n  free4 TEXT,\n  free5 TEXT,\n  free6 TEXT,\n  agent_number TEXT,\n  enable_flg INTEGER DEFAULT 1,\n  payment_select INTEGER DEFAULT 0,\n  payment_status INTEGER DEFAULT 0,\n  uniqid TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  canceled_at TEXT,\n  branch_code TEXT,\n  address TEXT\n)"
+      },
+      {
+        "sql": "CREATE TABLE d1_migrations(\n\t\tid         INTEGER PRIMARY KEY AUTOINCREMENT,\n\t\tname       TEXT UNIQUE,\n\t\tapplied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE email_templates (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  template_name TEXT NOT NULL UNIQUE,\n  description TEXT,\n  from_email TEXT NOT NULL,\n  bcc_email TEXT,\n  subject_template TEXT NOT NULL,\n  body_template TEXT NOT NULL,\n  is_active INTEGER DEFAULT 1,\n  created_at DATETIME DEFAULT (datetime('now', 'localtime')),\n  modified_at DATETIME DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE event_form_fields (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  event_id INTEGER NOT NULL,\n  field_type TEXT NOT NULL,\n  field_name TEXT NOT NULL,\n  field_label TEXT NOT NULL,\n  field_options TEXT,\n  is_required INTEGER DEFAULT 0,\n  description TEXT,\n  display_order INTEGER DEFAULT 0,\n  placeholder TEXT,\n  parent_field_id INTEGER,\n  parent_condition TEXT,\n  indent_level INTEGER DEFAULT 0,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (event_id) REFERENCES events(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE event_staff (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  event_id INTEGER NOT NULL,\n  account_id INTEGER NOT NULL,\n  assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,\n  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,\n  UNIQUE(event_id, account_id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE events (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  detail TEXT,\n  contact TEXT NOT NULL,\n  remarks TEXT,\n  question TEXT,\n  postage INTEGER DEFAULT 0,\n  thanks_msg TEXT,\n  note TEXT,\n  client_id INTEGER NOT NULL,\n  company_flg INTEGER DEFAULT 0,\n  enable_flg INTEGER DEFAULT 1,\n  payment_flg INTEGER DEFAULT 0,\n  payment_cd TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  \n  \n  customer_client_id INTEGER,\n  vendor_id INTEGER,\n  event_url TEXT,\n  category TEXT,\n  deleted_at TEXT,\n  date_selection_type TEXT DEFAULT 'single',\n  location TEXT,\n  payment_methods TEXT,\n  credit_fee_type TEXT,\n  bank_fee_type TEXT,\n  convenience_fee_type TEXT,\n  registration_start_date TEXT,\n  registration_end_date TEXT,\n  event_start_date TEXT,\n  event_end_date TEXT,\n  admin_email TEXT,\n  admin_name TEXT,\n  \n  \n  name_en TEXT,\n  detail_en TEXT,\n  location_en TEXT,\n  contact_en TEXT,\n  remarks_en TEXT,\n  thanks_msg_en TEXT,\n  \n  \n  organizer_id INTEGER,\n  admin_login_start_date TEXT,\n  admin_login_end_date TEXT,\n  admin_cc_email TEXT,\n  sender_name TEXT,\n  sender_email TEXT,\n  email_signature TEXT,\n  email_signature_en TEXT,\n  \n  \n  bank_name TEXT,\n  bank_branch TEXT,\n  bank_account_type TEXT,\n  bank_account_number TEXT,\n  bank_account_name TEXT,\n  bank_transfer_deadline INTEGER,\n  \n  \n  store_code TEXT,\n  convenience_payment_deadline INTEGER,\n  available_convenience_stores TEXT,\n  \n  \n  credit_fee_percentage REAL,\n  credit_fee_fixed INTEGER,\n  bank_fee_percentage REAL,\n  bank_fee_fixed INTEGER,\n  convenience_fee_percentage REAL,\n  convenience_fee_fixed INTEGER,\n  \n  \n  form_field_settings TEXT,\n  \n  \n  auto_reply_enabled INTEGER DEFAULT 0,\n  auto_reply_credit_payment TEXT,\n  auto_reply_bank_payment TEXT,\n  auto_reply_convenience_payment TEXT,\n  auto_reply_credit_cancel TEXT,\n  auto_reply_bank_cancel TEXT,\n  auto_reply_convenience_cancel TEXT,\n  auto_reply_credit_refund TEXT,\n  auto_reply_bank_deposit TEXT,\n  auto_reply_bank_refund TEXT,\n  auto_reply_convenience_deposit TEXT,\n  auto_reply_convenience_refund TEXT,\n  \n  \n  auto_reply_credit_payment_en TEXT,\n  auto_reply_bank_payment_en TEXT,\n  auto_reply_convenience_payment_en TEXT,\n  auto_reply_credit_cancel_en TEXT,\n  auto_reply_bank_cancel_en TEXT,\n  auto_reply_convenience_cancel_en TEXT,\n  auto_reply_credit_refund_en TEXT,\n  auto_reply_bank_deposit_en TEXT,\n  auto_reply_bank_refund_en TEXT,\n  auto_reply_convenience_deposit_en TEXT,\n  auto_reply_convenience_refund_en TEXT,\n  \n  \n  parent_event_id INTEGER,\n  event_type TEXT DEFAULT 'standalone',\n  \n  \n  payment_credit_card INTEGER DEFAULT 0,\n  payment_bank_transfer INTEGER DEFAULT 0,\n  payment_convenience_store INTEGER DEFAULT 0,\n  \n  \n  cancel_policy TEXT,\n  cancellation_policy_details TEXT,\n  cancellation_days_1 INTEGER,\n  cancellation_rate_1 INTEGER,\n  cancellation_days_2 INTEGER,\n  cancellation_rate_2 INTEGER,\n  cancellation_days_3 INTEGER,\n  cancellation_rate_3 INTEGER, image_url TEXT,\n  \n  FOREIGN KEY (client_id) REFERENCES clients(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE members (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  email TEXT UNIQUE NOT NULL,\n  password_hash TEXT NOT NULL,\n  family_name TEXT NOT NULL,\n  first_name TEXT NOT NULL,\n  family_kana TEXT NOT NULL,\n  first_kana TEXT NOT NULL,\n  last_name_en TEXT,\n  first_name_en TEXT,\n  sex TEXT,\n  birth DATE,\n  zip TEXT,\n  pref_id INTEGER,\n  addr TEXT,\n  tel TEXT NOT NULL,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  mobile TEXT DEFAULT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_bookings (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  customer_id INTEGER NOT NULL,\n  option_id INTEGER NOT NULL,\n  option_stock_id INTEGER,\n  price INTEGER NOT NULL,\n  quantity INTEGER NOT NULL DEFAULT 1,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  canceled_at TEXT,\n  FOREIGN KEY (customer_id) REFERENCES customers(id),\n  FOREIGN KEY (option_id) REFERENCES options(id),\n  FOREIGN KEY (option_stock_id) REFERENCES option_stocks(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_categories (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  description TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_forms (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  option_id INTEGER NOT NULL,\n  form_type INTEGER NOT NULL,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (option_id) REFERENCES options(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_inherited_products (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  option_id INTEGER NOT NULL,\n  product_id INTEGER NOT NULL,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (option_id) REFERENCES options(id),\n  FOREIGN KEY (product_id) REFERENCES products(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_prices (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  option_id INTEGER NOT NULL,\n  price INTEGER NOT NULL,\n  category_name TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (option_id) REFERENCES options(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_shared_stock_pools (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  pool_name TEXT NOT NULL,\n  total_stock INTEGER DEFAULT 0,\n  booked INTEGER DEFAULT 0,\n  available INTEGER DEFAULT 0,\n  event_id INTEGER,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE option_stocks (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  option_id INTEGER NOT NULL,\n  date TEXT,\n  stock INTEGER NOT NULL DEFAULT 0,\n  booked INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  stock_name TEXT,\n  price INTEGER,\n  total_stock INTEGER DEFAULT 0,\n  available_stock INTEGER DEFAULT 0,\n  enable_flg INTEGER DEFAULT 1,\n  shared_pool_id INTEGER,\n  FOREIGN KEY (option_id) REFERENCES options(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE options (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  event_id INTEGER NOT NULL,\n  name TEXT NOT NULL,\n  description TEXT,\n  remarks TEXT,\n  option_category_id INTEGER NOT NULL,\n  cancel_policy TEXT,\n  note TEXT,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  deleted_at TEXT,\n  FOREIGN KEY (event_id) REFERENCES events(id),\n  FOREIGN KEY (option_category_id) REFERENCES option_categories(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE organizers (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  contactable_person TEXT,\n  email TEXT,\n  tel TEXT,\n  branch_office TEXT,\n  reg_flg INTEGER DEFAULT 1,\n  deleted_at TEXT,\n  zip TEXT,\n  pref_id INTEGER,\n  addr TEXT,\n  fax TEXT,\n  password TEXT,\n  business_hours TEXT,\n  closed_days TEXT,\n  business_notes TEXT,\n  registration_number TEXT,\n  association_name TEXT,\n  association_membership TEXT,\n  travel_manager_title TEXT,\n  travel_manager_name TEXT,\n  remarks TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE prefs (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE product_bookings (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  booking_number TEXT,\n  customer_id INTEGER NOT NULL,\n  product_id INTEGER NOT NULL,\n  product_stock_id INTEGER,\n  price INTEGER NOT NULL,\n  quantity INTEGER NOT NULL DEFAULT 1,\n  booking_status TEXT DEFAULT 'reserved',\n  payment_status TEXT DEFAULT 'pending',\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  canceled_at TEXT,\n  qr_code_url TEXT,\n  pdf_file_url TEXT,\n  price_items TEXT,\n  remarks TEXT,\n  participants TEXT,\n  participation_date TEXT,\n  payment_method TEXT,\n  payment_date TEXT,\n  payment_transaction_id TEXT,\n  bank_transfer_info TEXT,\n  convenience_store_info TEXT,\n  survey_answers TEXT,\n  organizer_id INTEGER,\n  vendor_id INTEGER,\n  branch_code TEXT,\n  FOREIGN KEY (customer_id) REFERENCES customers(id),\n  FOREIGN KEY (product_id) REFERENCES products(id),\n  FOREIGN KEY (product_stock_id) REFERENCES product_stocks(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE product_categories (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  description TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE product_form_fields (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  field_type TEXT NOT NULL,\n  field_name TEXT NOT NULL,\n  field_label TEXT NOT NULL,\n  field_options TEXT,\n  is_required INTEGER DEFAULT 0,\n  description TEXT,\n  display_order INTEGER DEFAULT 0,\n  placeholder TEXT,\n  parent_field_id INTEGER,\n  parent_condition TEXT,\n  indent_level INTEGER DEFAULT 0,\n  validation_rule TEXT,\n  default_value TEXT,\n  help_text TEXT,\n  created_at TEXT DEFAULT (datetime('now','localtime')),\n  modified_at TEXT DEFAULT (datetime('now','localtime')),\n  category INTEGER DEFAULT 1\n)"
+      },
+      {
+        "sql": "CREATE TABLE product_prices (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  price INTEGER NOT NULL,\n  category_name TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  price_band TEXT,\n  price_name TEXT,\n  display_order INTEGER DEFAULT 0,\n  slot_number INTEGER DEFAULT 1,\n  FOREIGN KEY (product_id) REFERENCES products(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE product_shared_stock_pools (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  shared_stock_pool_id INTEGER NOT NULL,\n  stock_name TEXT,\n  price_band TEXT,\n  enable_flg INTEGER DEFAULT 1,\n  priority INTEGER DEFAULT 0,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  FOREIGN KEY (product_id) REFERENCES products(id),\n  FOREIGN KEY (shared_stock_pool_id) REFERENCES shared_stock_pools(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE product_stocks (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  date TEXT NOT NULL,\n  stock INTEGER NOT NULL DEFAULT 0,\n  booked INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  time_slot_start TEXT,\n  time_slot_end TEXT,\n  time_slot_label TEXT,\n  stock_name TEXT,\n  shared_pool_id INTEGER,\n  price_band TEXT,\n  FOREIGN KEY (product_id) REFERENCES products(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE products (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  client_id INTEGER NOT NULL,\n  event_id INTEGER NOT NULL,\n  name TEXT NOT NULL,\n  sales_start TEXT NOT NULL,\n  sales_end TEXT NOT NULL,\n  closing_trade INTEGER NOT NULL DEFAULT 0,\n  product_category_id INTEGER,\n  description TEXT,\n  remarks TEXT,\n  fee_include TEXT,\n  fee_exclude TEXT,\n  cancel_policy TEXT,\n  purchase_limit INTEGER,\n  deposit_address TEXT,\n  note TEXT,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime')),\n  slot_type INTEGER DEFAULT 0,\n  deleted_at TEXT,\n  \n  \n  cancellation_days_1 INTEGER,\n  cancellation_rate_1 INTEGER,\n  cancellation_days_2 INTEGER,\n  cancellation_rate_2 INTEGER,\n  cancellation_days_3 INTEGER,\n  cancellation_rate_3 INTEGER,\n  cancellation_days_4 INTEGER,\n  cancellation_rate_4 INTEGER,\n  cancellation_days_5 INTEGER,\n  cancellation_rate_5 INTEGER,\n  \n  common_names TEXT,\n  cancellation_policy_details TEXT,\n  price_unit TEXT DEFAULT '人',\n  charge_type TEXT DEFAULT 'per_person',\n  charge_description TEXT,\n  form_field_settings TEXT DEFAULT '{\"name_kanji\":true,\"name_kana\":true,\"name_roma\":false,\"address\":true,\"tel\":true,\"birth_date\":false,\"age\":false}', image_url TEXT,\n  \n  FOREIGN KEY (client_id) REFERENCES clients(id),\n  FOREIGN KEY (event_id) REFERENCES events(id),\n  FOREIGN KEY (product_category_id) REFERENCES product_categories(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE refund_history (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  payment_id INTEGER NOT NULL,\n  booking_item_id INTEGER,\n  \n  \n  refund_amount INTEGER NOT NULL,\n  refund_method TEXT,\n  refund_date TEXT DEFAULT (datetime('now', 'localtime')),\n  refund_transaction_id TEXT,\n  \n  \n  refund_reason TEXT,\n  refund_details TEXT,\n  \n  remarks TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  \n  FOREIGN KEY (payment_id) REFERENCES booking_payments(id),\n  FOREIGN KEY (booking_item_id) REFERENCES booking_items(id)\n)"
+      },
+      {
+        "sql": "CREATE TABLE shared_stock_pools (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  pool_name TEXT NOT NULL,\n  pool_code TEXT,\n  description TEXT,\n  date TEXT NOT NULL,\n  time_slot_start TEXT,\n  time_slot_end TEXT,\n  time_slot_label TEXT,\n  total_stock INTEGER DEFAULT 0,\n  booked INTEGER DEFAULT 0,\n  available_stock INTEGER GENERATED ALWAYS AS (total_stock - booked) VIRTUAL,\n  enable_flg INTEGER DEFAULT 1,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+      },
+      {
+        "sql": "CREATE TABLE vendors (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  contactable_person TEXT,\n  email TEXT,\n  tel TEXT,\n  reg_flg INTEGER DEFAULT 1,\n  deleted_at TEXT,\n  zip TEXT,\n  pref_id INTEGER,\n  addr TEXT,\n  fax TEXT,\n  password TEXT,\n  business_hours TEXT,\n  closed_days TEXT,\n  business_notes TEXT,\n  remarks TEXT,\n  created_at TEXT DEFAULT (datetime('now', 'localtime')),\n  modified_at TEXT DEFAULT (datetime('now', 'localtime'))\n)"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 1
+    }
+  }
+]

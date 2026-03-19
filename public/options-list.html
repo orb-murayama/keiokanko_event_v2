@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オプション管理 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- パンくずリスト -->
+  <div class="container" style="margin-top: 1rem;">
+    <div class="breadcrumb" style="font-size: 0.875rem; color: #6b7280;">
+      <a href="/admin" style="color: #3b82f6;">管理画面</a> &gt; 
+      <a href="/admin-options.html" style="color: #3b82f6;">オプション一覧</a>
+    </div>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- ヘッダー -->
+      <div class="card-header">
+        <h2 class="card-title">オプション一覧</h2>
+        <a href="/options-edit.html?id=new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> 新規オプション登録
+        </a>
+      </div>
+
+      <!-- 検索フォーム -->
+      <form id="searchForm" class="search-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="searchName" class="form-label">オプション名</label>
+            <input type="text" id="searchName" name="name" class="form-control" placeholder="オプション名で検索">
+          </div>
+          <div class="form-group">
+            <label for="searchEvent" class="form-label">イベント</label>
+            <select id="searchEvent" name="event_id" class="form-control">
+              <option value="">すべてのイベント</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchCategory" class="form-label">カテゴリー</label>
+            <select id="searchCategory" name="category_id" class="form-control">
+              <option value="">すべてのカテゴリー</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchStatus" class="form-label">状態</label>
+            <select id="searchStatus" name="enable_flg" class="form-control">
+              <option value="">すべて</option>
+              <option value="1">有効</option>
+              <option value="0">無効</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> 検索
+          </button>
+          <button type="button" onclick="resetSearch()" class="btn btn-secondary">
+            <i class="fas fa-redo"></i> リセット
+          </button>
+        </div>
+      </form>
+
+      <!-- オプション一覧テーブル -->
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>画像</th>
+              <th>オプション名</th>
+              <th>イベント</th>
+              <th>カテゴリー</th>
+              <th>状態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="optionsTableBody">
+            <tr>
+              <td colspan="7" class="text-center">読み込み中...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2025 イベント予約管理システム</p>
+    </div>
+  </footer>
+
+  <!-- ローディングオーバーレイ -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js?v=20260128"></script>
+  <script src="/static/js/modules/utils.js?v=20260128"></script>
+  <script src="/static/js/pages/admin.js?v=20260128"></script>
+  <script src="/static/js/pages/admin-options.js?v=20260128"></script>
+</body>
+</html>

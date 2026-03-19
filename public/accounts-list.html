@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アカウント管理 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  
+  <!-- 管理画面認証チェック -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- ヘッダー -->
+      <div class="card-header">
+        <h2 class="card-title">アカウント一覧</h2>
+        <a href="/accounts-edit.html?id=new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> 新規アカウント登録
+        </a>
+      </div>
+
+      <!-- 検索フォーム -->
+      <form id="searchForm" class="search-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="searchLoginId" class="form-label">ログインID</label>
+            <input type="text" id="searchLoginId" class="form-control" placeholder="ログインIDで検索">
+          </div>
+          <div class="form-group">
+            <label for="searchPersonName" class="form-label">担当者名</label>
+            <input type="text" id="searchPersonName" class="form-control" placeholder="担当者名で検索">
+          </div>
+          <div class="form-group">
+            <label for="searchRole" class="form-label">権限</label>
+            <select id="searchRole" class="form-control">
+              <option value="">すべて</option>
+              <option value="system_admin">システム管理者</option>
+              <option value="admin">本社管理者</option>
+              <option value="branch">支店担当者</option>
+              <option value="client">クライアント</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchStatus" class="form-label">状態</label>
+            <select id="searchStatus" class="form-control">
+              <option value="">すべて</option>
+              <option value="1">有効</option>
+              <option value="0">無効</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> 検索
+          </button>
+          <button type="button" id="resetBtn" class="btn btn-secondary">
+            <i class="fas fa-redo"></i> リセット
+          </button>
+        </div>
+      </form>
+
+      <!-- 読み込み中 -->
+      <div id="loading" class="hidden">読み込み中...</div>
+      
+      <!-- エラーメッセージ -->
+      <div id="errorMessage" class="hidden"></div>
+
+      <!-- アカウントテーブル -->
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ログインID</th>
+              <th>担当者名</th>
+              <th>メール</th>
+              <th>アカウント種別</th>
+              <th>権限</th>
+              <th>支店/クライアント</th>
+              <th>状態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody">
+            <tr>
+              <td colspan="9" class="text-center">読み込み中...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ページネーション -->
+      <div id="pagination" class="pagination hidden">
+        <div class="pagination-info">
+          <span id="paginationInfo">全 0 件中 0 - 0 件を表示</span>
+        </div>
+        <div class="pagination-buttons">
+          <button id="prevPage" class="btn btn-secondary" disabled>
+            <i class="fas fa-chevron-left"></i> 前へ
+          </button>
+          <button id="nextPage" class="btn btn-secondary" disabled>
+            次へ <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2025 イベント予約管理システム</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-accounts.js"></script>
+</body>
+</html>

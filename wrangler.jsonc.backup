@@ -1,0 +1,101 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "webapp",
+  "compatibility_date": "2025-11-20",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "webapp-production",
+      "database_id": "123349c1-bc70-4887-9647-e4ca86222564"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "webapp-products"
+    },
+    {
+      "binding": "BOOKING_FILES",
+      "bucket_name": "webapp-booking-files"
+    }
+  ],
+  "vars": {
+    "APP_MODE": "all"
+  },
+  "env": {
+    "preview": {
+      "name": "webapp-preview",
+      "vars": {
+        "APP_MODE": "all"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "webapp-production",
+          "database_id": "123349c1-bc70-4887-9647-e4ca86222564"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "webapp-products"
+        },
+        {
+          "binding": "BOOKING_FILES",
+          "bucket_name": "webapp-booking-files"
+        }
+      ]
+    },
+    "production": {
+      "name": "webapp",
+      "vars": {
+        "APP_MODE": "all"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "webapp-production",
+          "database_id": "123349c1-bc70-4887-9647-e4ca86222564"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "webapp-products"
+        },
+        {
+          "binding": "BOOKING_FILES",
+          "bucket_name": "webapp-booking-files"
+        }
+      ]
+    },
+    "test": {
+      "name": "ko-event",
+      "account_id": "458b083c565f5d68f3020904bd953002",
+      "vars": {
+        "APP_MODE": "all"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "ko-event-db",
+          "database_id": "85cef4a7-802a-461c-bd01-415708be28a5"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "ko-event"
+        },
+        {
+          "binding": "BOOKING_FILES",
+          "bucket_name": "ko-event"
+        }
+      ]
+    }
+  }
+}

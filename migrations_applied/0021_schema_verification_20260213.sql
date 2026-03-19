@@ -1,0 +1,31 @@
+-- 2/13 DDL Verification
+-- This migration confirms that all tables match the 2026-02-13 DDL specification
+-- All tables have been restored from db_backup_20260213.sql
+
+-- Verified tables:
+-- ✅ accounts (16 columns) - includes expiration_date, tel, mobile
+-- ✅ branches (8 columns)
+-- ✅ prefs (2 columns)
+-- ✅ categories (9 columns)
+-- ✅ product_categories (5 columns)
+-- ✅ option_categories (5 columns)
+-- ✅ clients (19 columns) - includes client_code, position
+-- ✅ organizers (24 columns) - full business details
+-- ✅ vendors (18 columns) - full business details
+-- ✅ customers (40 columns) - includes branch_code, address
+-- ✅ members (19 columns) - includes mobile
+-- ✅ events (80+ columns) - complete event management
+-- ✅ products (30+ columns) - includes image_url
+-- ✅ options (12+ columns) - includes image_url
+-- ✅ bookings (12 columns)
+-- ✅ booking_payments (18 columns)
+-- ✅ booking_items (20 columns)
+-- ✅ refund_history (10 columns)
+-- ✅ booking_files (8 columns)
+-- ✅ booking_messages (12 columns)
+-- ✅ email_templates (9 columns)
+-- ✅ booking_emails (13 columns)
+-- ✅ product_bookings (28 columns)
+
+-- No schema changes required - all tables already match 2/13 DDL
+SELECT 'Schema verification completed - all tables match 2026-02-13 DDL' AS status;

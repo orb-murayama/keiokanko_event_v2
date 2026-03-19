@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オプション在庫管理 | 管理画面</title>
+  <link rel="stylesheet" href="/static/css/reset.css?v=20260128-2">
+  <link rel="stylesheet" href="/static/css/variables.css?v=20260128-2">
+  <link rel="stylesheet" href="/static/css/components.css?v=20260128-2">
+  <link rel="stylesheet" href="/static/css/admin.css?v=20260128-6">
+  <link rel="stylesheet" href="/static/css/utilities.css?v=20260128-2">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-content">
+      <!-- パンくずリスト -->
+      <nav class="breadcrumb">
+        <a href="/admin">管理画面</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/admin/options" id="optionsLink">オプション管理</a>
+        <i class="fas fa-chevron-right"></i>
+        <span id="optionName">在庫管理</span>
+      </nav>
+
+      <!-- オプション情報 -->
+      <div class="page-header">
+        <div>
+          <h2 class="page-title" id="pageTitle">在庫管理</h2>
+          <p class="page-subtitle" id="eventName"></p>
+        </div>
+      </div>
+
+      <!-- 在庫登録フォーム -->
+      <div class="admin-card">
+        <h3 class="card-title">在庫登録</h3>
+        <form id="stockForm" class="admin-form">
+          <input type="hidden" id="stockId" name="stock_id">
+          
+          <!-- 日付範囲選択 -->
+          <div class="form-section info-box">
+            <div class="form-section-header">
+              <i class="fas fa-calendar-alt"></i>
+              <h4>日付設定</h4>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="stockDateStart" class="form-label required">開始日</label>
+                <input type="date" id="stockDateStart" name="date_start" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="stockDateEnd" class="form-label">終了日</label>
+                <input type="date" id="stockDateEnd" name="date_end" class="form-input">
+                <p class="helper-text">
+                  <i class="fas fa-info-circle"></i>
+                  終了日を入力すると、開始日から終了日までの期間の在庫を一括で登録できます
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 在庫詳細設定 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="stockName" class="form-label">在庫名</label>
+              <input type="text" id="stockName" name="stock_name" class="form-input" placeholder="例: 午前、11時～12時">
+              <p class="helper-text">時間帯やセッション名などを入力してください</p>
+            </div>
+            <div class="form-group">
+              <label for="price" class="form-label">価格</label>
+              <input type="number" id="price" name="price" class="form-input" min="0" placeholder="1000">
+              <p class="helper-text">このオプションの価格を入力してください</p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="stockQuantity" class="form-label required">在庫数</label>
+              <input type="number" id="stockQuantity" name="stock" class="form-input" required min="0" placeholder="100">
+            </div>
+            <div class="form-group">
+              <!-- 空のスペース -->
+            </div>
+          </div>
+
+          <!-- ボタン（右寄せ） -->
+          <div class="form-actions">
+            <button type="button" id="cancelButton" class="btn btn-secondary" onclick="cancelEdit()" style="display:none;">
+              <i class="fas fa-times"></i>
+              キャンセル
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i>
+              <span id="submitButtonText">登録</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 在庫一覧 -->
+      <div class="admin-card">
+        <div class="card-header">
+          <h3 class="card-title">在庫一覧</h3>
+          <div id="stockSummary" class="stock-summary"></div>
+        </div>
+
+        <!-- ローディング -->
+        <div id="loading" class="loading-state">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>読み込み中...</p>
+        </div>
+
+        <!-- エラー表示 -->
+        <div id="error" class="error-state" style="display: none;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p id="errorMessage">在庫情報の取得に失敗しました</p>
+        </div>
+
+        <!-- テーブル -->
+        <div id="stocksTableContainer" class="table-container" style="display: none;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>在庫名</th>
+                <th class="text-right">価格</th>
+                <th class="text-right">在庫数</th>
+                <th class="text-right">予約済</th>
+                <th class="text-right">利用可能</th>
+                <th class="text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="stocksTableBody">
+              <!-- JavaScriptで動的生成 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <p>&copy; 2025 イベント予約管理システム</p>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js?v=20260128-2"></script>
+  <script src="/static/js/modules/utils.js?v=20260128-2"></script>
+  <script src="/static/js/pages/admin.js?v=20260128-2"></script>
+  <script src="/static/js/pages/admin-options-stocks.js?v=20260128-2"></script>
+</body>
+</html>

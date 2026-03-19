@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>テストページ</title>
+</head>
+<body>
+  <h1>テストページ</h1>
+  <div id="loading" class="hidden">読み込み中...</div>
+  <div id="errorMessage" class="hidden"></div>
+  
+  <script type="module">
+    import { showLoading, showError } from '/static/js/modules/utils.js';
+    
+    console.log('モジュール読み込み成功');
+    showLoading(true);
+    
+    setTimeout(() => {
+      showLoading(false);
+      showError('テストエラー');
+    }, 2000);
+  </script>
+</body>
+</html>

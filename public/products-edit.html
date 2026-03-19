@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品編集 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/variables.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/components.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/admin.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/utilities.css?v=20260217-004">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <div class="card-header">
+        <h2 class="card-title" id="formTitle">商品登録</h2>
+      </div>
+
+      <!-- 読み込み中 -->
+      <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>読み込み中...</p>
+      </div>
+
+      <!-- フォーム -->
+      <form id="productForm" style="display: none;">
+        <!-- 基本情報 -->
+        <div class="form-section">
+          <h3 class="form-section-title">基本情報</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="event_id" class="form-label">イベント<span class="required">*</span></label>
+              <select id="event_id" name="event_id" class="form-control" required>
+                <option value="">選択してください</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="product_category_id" class="form-label">商品カテゴリー</label>
+              <select id="product_category_id" name="product_category_id" class="form-control">
+                <option value="">選択してください</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sales_start" class="form-label">販売開始日時<span class="required">*</span></label>
+              <input type="datetime-local" id="sales_start" name="sales_start" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="sales_end" class="form-label">販売終了日時<span class="required">*</span></label>
+              <input type="datetime-local" id="sales_end" name="sales_end" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="name" class="form-label">商品名<span class="required">*</span></label>
+            <input type="text" id="name" name="name" class="form-control" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="closing_trade" class="form-label">締切取引日数</label>
+              <input type="number" id="closing_trade" name="closing_trade" class="form-control" value="0" min="0">
+              <small class="form-helper">イベント何日前に販売を締め切るか</small>
+            </div>
+            <div class="form-group">
+              <label for="purchase_limit" class="form-label">購入制限数</label>
+              <input type="number" id="purchase_limit" name="purchase_limit" class="form-control" value="0" min="0">
+              <small class="form-helper">0の場合は制限なし</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="enable_flg" class="form-label">状態</label>
+              <select id="enable_flg" name="enable_flg" class="form-control">
+                <option value="1">有効</option>
+                <option value="0">無効</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="display_order" class="form-label">表示順</label>
+              <input type="number" id="display_order" name="display_order" class="form-control" value="1" min="1">
+              <small class="form-helper">数字が小さいほど上位に表示されます</small>
+            </div>
+          </div>
+
+          <!-- 商品画像 -->
+          <div class="form-group">
+            <label for="image_url" class="form-label">商品画像</label>
+            <div id="imagePreview" style="margin-bottom: 1rem; display: none;">
+              <img id="previewImage" src="" alt="商品画像プレビュー" style="max-width: 300px; max-height: 300px; border: 1px solid #ddd; border-radius: 4px; padding: 4px;">
+              <button type="button" id="removeImageBtn" class="btn btn-secondary" style="display: block; margin-top: 0.5rem;">
+                <i class="fas fa-times"></i> 画像を削除
+              </button>
+            </div>
+            <input type="file" id="imageFile" accept="image/*" class="form-control" style="margin-bottom: 0.5rem;">
+            <input type="hidden" id="image_url" name="image_url">
+            <small class="form-helper">JPG, PNG, GIF形式。最大5MB。</small>
+          </div>
+        </div>
+
+        <!-- 価格帯設定（複数登録可能） -->
+        <div class="form-section" style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1.5rem;">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <h3 class="form-section-title" style="margin: 0;">
+              <i class="fas fa-tags" style="margin-right: 0.5rem; color: #2563eb;"></i>
+              価格帯設定（複数登録可能）
+            </h3>
+          </div>
+          <p style="font-size: 0.875rem; color: #4b5563; margin-bottom: 1rem;">
+            <strong>ステップ1:</strong> まず共通の名称（大人、子供など）を設定<br>
+            <strong>ステップ2:</strong> 各価格帯（A, B, C...）で価格のみを入力<br>
+            例：名称（大人、子供）→ 価格帯A（10,000円、7,000円）、価格帯B（15,000円、10,000円）
+          </p>
+          
+          <!-- 共通名称設定 -->
+          <div style="background-color: white; border: 2px solid #86efac; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+            <h4 style="font-size: 0.9375rem; font-weight: 700; color: #1f2937; margin-bottom: 0.75rem;">
+              <i class="fas fa-users" style="color: #16a34a; margin-right: 0.5rem;"></i>
+              共通名称設定（全価格帯共通）
+            </h4>
+            <p style="font-size: 0.75rem; color: #4b5563; margin-bottom: 0.75rem;">
+              すべての価格帯で使用する名称を設定してください。最大5つまで登録できます。
+            </p>
+            
+            <!-- 単位・料金単位・料金説明 -->
+            <div class="form-row" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-tag" style="color: #2563eb; margin-right: 0.25rem;"></i>
+                  単位 <span class="required">*</span>
+                </label>
+                <input type="text" id="price_unit_common" name="price_unit" class="form-control" placeholder="例：人、名、台、部屋" required>
+                <small class="form-helper">数量の単位を入力</small>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-calculator" style="color: #2563eb; margin-right: 0.25rem;"></i>
+                  料金単位 <span class="required">*</span>
+                </label>
+                <select id="charge_type_common" name="charge_type" class="form-control" required>
+                  <option value="">選択してください</option>
+                  <option value="per_person">1名料金</option>
+                  <option value="per_group">グループ料金</option>
+                </select>
+                <small class="form-helper">料金の計算方式を選択</small>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.75rem; font-weight: 600;">
+                  <i class="fas fa-info-circle" style="color: #2563eb; margin-right: 0.25rem;"></i>
+                  料金説明
+                </label>
+                <input type="text" id="charge_description_common" name="charge_description" class="form-control" placeholder="例：1名あたりの料金です">
+                <small class="form-helper">料金の説明を入力（任意）</small>
+              </div>
+            </div>
+            
+            <div id="commonNamesContainer">
+              <!-- 名称1-5 -->
+              <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700;">名称1</span>
+                <input type="text" name="common_name_1" class="form-control" placeholder="大人" required style="font-size: 0.875rem;">
+                <input type="text" name="common_desc_1" class="form-control" placeholder="補足説明（例：18歳以上）" style="font-size: 0.875rem;">
+              </div>
+              <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700;">名称2</span>
+                <input type="text" name="common_name_2" class="form-control" placeholder="子供" style="font-size: 0.875rem;">
+                <input type="text" name="common_desc_2" class="form-control" placeholder="補足説明（例：小中学生）" style="font-size: 0.875rem;">
+              </div>
+              <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700;">名称3</span>
+                <input type="text" name="common_name_3" class="form-control" placeholder="幼児" style="font-size: 0.875rem;">
+                <input type="text" name="common_desc_3" class="form-control" placeholder="補足説明（例：3歳未満）" style="font-size: 0.875rem;">
+              </div>
+              <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700;">名称4</span>
+                <input type="text" name="common_name_4" class="form-control" placeholder="シニア" style="font-size: 0.875rem;">
+                <input type="text" name="common_desc_4" class="form-control" placeholder="補足説明（例：60歳以上）" style="font-size: 0.875rem;">
+              </div>
+              <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700;">名称5</span>
+                <input type="text" name="common_name_5" class="form-control" placeholder="80歳以上" style="font-size: 0.875rem;">
+                <input type="text" name="common_desc_5" class="form-control" placeholder="補足説明（例：シルバー）" style="font-size: 0.875rem;">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 価格帯グループ -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <h4 style="font-size: 0.9375rem; font-weight: 700; color: #1f2937; margin: 0;">
+              <i class="fas fa-yen-sign" style="color: #2563eb; margin-right: 0.5rem;"></i>
+              価格帯別の価格設定
+            </h4>
+            <button type="button" id="addPriceBandBtn" class="btn btn-primary" style="font-size: 0.875rem;">
+              <i class="fas fa-plus" style="margin-right: 0.25rem;"></i>価格帯を追加
+            </button>
+          </div>
+          
+          <!-- 価格帯グループコンテナ -->
+          <div id="priceBandsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- 価格帯は動的に追加されます -->
+          </div>
+        </div>
+
+        <!-- 商品説明 -->
+        <div class="form-section">
+          <h3 class="form-section-title">商品説明</h3>
+          
+          <div class="form-group">
+            <label for="description" class="form-label">商品説明</label>
+            <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="remarks" class="form-label">備考</label>
+            <textarea id="remarks" name="remarks" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="note" class="form-label">注意事項</label>
+            <textarea id="note" name="note" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- 料金情報 -->
+        <div class="form-section">
+          <h3 class="form-section-title">料金情報</h3>
+          
+          <div class="form-group">
+            <label for="fee_include" class="form-label">料金に含まれるもの</label>
+            <textarea id="fee_include" name="fee_include" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="fee_exclude" class="form-label">料金に含まれないもの</label>
+            <textarea id="fee_exclude" name="fee_exclude" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="deposit_address" class="form-label">振込先情報</label>
+            <textarea id="deposit_address" name="deposit_address" class="form-control" rows="4" placeholder="銀行名、支店名、口座番号、口座名義などを入力"></textarea>
+            <small class="form-helper">銀行振込の場合の振込先情報を入力してください</small>
+          </div>
+        </div>
+
+        <!-- 参加者情報設定 -->
+        <div class="form-section">
+          <h3 class="form-section-title">参加者情報設定</h3>
+          <p class="form-helper" style="margin-bottom: 1rem;">予約時に参加者に入力してもらう項目を選択してください。</p>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+            <!-- 姓名（漢字） -->
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_name_kanji" name="field_name_kanji" value="true" style="margin-right: 0.5rem;">
+                <span>姓名（漢字）</span>
+              </label>
+            </div>
+            
+            <!-- 姓名（カナ） -->
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_name_kana" name="field_name_kana" value="true" style="margin-right: 0.5rem;">
+                <span>姓名（カナ）</span>
+              </label>
+            </div>
+            
+            <!-- 姓名（ローマ字） -->
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_name_roman" name="field_name_roman" value="true" style="margin-right: 0.5rem;">
+                <span>姓名（ローマ字）</span>
+              </label>
+            </div>
+            
+            <!-- その他の基本情報 -->
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_age" name="field_age" value="true" style="margin-right: 0.5rem;">
+                <span>年齢</span>
+              </label>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_gender" name="field_gender" value="true" style="margin-right: 0.5rem;">
+                <span>性別</span>
+              </label>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_email" name="field_email" value="true" style="margin-right: 0.5rem;">
+                <span>メールアドレス</span>
+              </label>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_phone" name="field_phone" value="true" style="margin-right: 0.5rem;">
+                <span>電話番号</span>
+              </label>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_birth_date" name="field_birth_date" value="true" style="margin-right: 0.5rem;">
+                <span>生年月日</span>
+              </label>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+              <label class="checkbox-label" style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="field_address" name="field_address" value="true" style="margin-right: 0.5rem;">
+                <span>住所</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ボタン -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> 保存
+          </button>
+          <a href="/admin/products" class="btn btn-secondary">
+            <i class="fas fa-times"></i> キャンセル
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2024 イベント予約管理システム. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-product-edit.js"></script>
+</body>
+</html>

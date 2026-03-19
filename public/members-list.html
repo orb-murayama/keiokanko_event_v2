@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会員管理 | 管理画面</title>
+  
+  <!-- CSS読み込み -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<script>
+// 支店管理者のアクセスをブロック
+// admin-auth.js の認証完了後にチェック
+document.addEventListener('adminAuthReady', function() {
+  const currentUserRole = window.currentAdminUser?.role;
+  console.log('🔒 会員管理アクセスチェック:', { role: currentUserRole });
+  
+  if (currentUserRole === 'branch') {
+    document.body.innerHTML = `
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; padding: 2rem;">
+        <div style="text-align: center; max-width: 600px;">
+          <i class="fas fa-lock" style="font-size: 4rem; color: #e53e3e; margin-bottom: 1rem;"></i>
+          <h1 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">アクセス権限がありません</h1>
+          <p style="color: #666; margin-bottom: 2rem;">
+            この機能は支店管理者ではアクセスできません。<br>
+            システム管理者または本社管理者のみアクセス可能です。
+          </p>
+          <a href="/admin-dashboard.html" style="display: inline-block; padding: 0.75rem 1.5rem; background: #3b82f6; color: white; text-decoration: none; border-radius: 0.375rem; font-weight: 500;">
+            <i class="fas fa-arrow-left"></i> ダッシュボードに戻る
+          </a>
+        </div>
+      </div>
+    `;
+    throw new Error('Access denied for branch role');
+  }
+});
+</script>
+<!-- メインコンテンツ -->
+  <main class="container admin-main">
+    <div class="admin-content">
+      <div class="admin-header-row">
+        <div>
+          <h2 class="admin-page-title">
+            <i class="fas fa-users"></i> 会員管理
+          </h2>
+          <nav class="breadcrumb">
+            <a href="/">トップ</a>
+            <span>/</span>
+            <a href="/admin">管理画面</a>
+            <span>/</span>
+            <span>会員管理</span>
+          </nav>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" id="downloadCsvTemplateBtn" class="btn btn-secondary">
+            <i class="fas fa-download"></i> CSVテンプレート
+          </button>
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none">
+          <button type="button" id="uploadCsvBtn" class="btn btn-info">
+            <i class="fas fa-upload"></i> CSV一括登録
+          </button>
+          <a href="/admin/members/new" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 新規会員登録
+          </a>
+        </div>
+      </div>
+
+      <!-- 検索フォーム -->
+      <form class="admin-form" onsubmit="event.preventDefault(); searchMembers();">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">検索キーワード</label>
+            <input 
+              type="text" 
+              id="searchInput" 
+              class="form-control" 
+              placeholder="メールアドレス、名前で検索..."
+            >
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> 検索
+          </button>
+          <button type="button" id="resetBtn" class="btn btn-secondary">
+            <i class="fas fa-redo"></i> リセット
+          </button>
+        </div>
+      </form>
+
+      <!-- CSVアップロード結果 -->
+      <div id="csvUploadResult" class="alert" style="display:none; margin-bottom: 1rem;"></div>
+
+      <!-- 会員テーブル -->
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>メールアドレス</th>
+              <th>氏名</th>
+              <th>氏名（カナ）</th>
+              <th>携帯電話</th>
+              <th>有効</th>
+              <th>登録日</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="membersTableBody">
+            <tr>
+              <td colspan="8" class="text-center">読み込み中...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ページネーション -->
+      <div id="pagination" class="pagination"></div>
+    </div>
+  </main>
+
+  <!-- JavaScript読み込み -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-members.js"></script>
+</body>
+</html>

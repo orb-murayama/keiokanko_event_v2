@@ -1,0 +1,77 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "webapp-v2",
+  "compatibility_date": "2025-11-20",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "webapp-v2-production",
+      "database_id": "cb4e75fc-e88d-429d-86ce-b96a9b5e86de"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "webapp-v2-products"
+    },
+    {
+      "binding": "BOOKING_FILES",
+      "bucket_name": "webapp-v2-booking-files"
+    }
+  ],
+  "vars": {
+    "APP_MODE": "all"
+  },
+  "env": {
+    "preview": {
+      "name": "webapp-preview",
+      "vars": {
+        "APP_MODE": "all"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "webapp-v2-production",
+          "database_id": "cb4e75fc-e88d-429d-86ce-b96a9b5e86de"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "webapp-v2-products"
+        },
+        {
+          "binding": "BOOKING_FILES",
+          "bucket_name": "webapp-v2-booking-files"
+        }
+      ]
+    },
+    "production": {
+      "name": "webapp-v2",
+      "vars": {
+        "APP_MODE": "all"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "webapp-v2-production",
+          "database_id": "cb4e75fc-e88d-429d-86ce-b96a9b5e86de"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2",
+          "bucket_name": "webapp-v2-products"
+        },
+        {
+          "binding": "BOOKING_FILES",
+          "bucket_name": "webapp-v2-booking-files"
+        }
+      ]
+    }
+  }
+}

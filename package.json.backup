@@ -1,0 +1,42 @@
+{
+  "name": "webapp",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:sandbox": "wrangler pages dev dist --d1=webapp-production --local --ip 0.0.0.0 --port 3000",
+    "build": "vite build && npm run copy-static",
+    "copy-static": "cp -r public/css public/js public/images dist/static/ && cp public/*.html public/_routes.json dist/",
+    "preview": "wrangler pages dev",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name webapp",
+    "deploy:customer": "npm run build && wrangler pages deploy dist --project-name webapp-customer",
+    "deploy:admin": "npm run build && wrangler pages deploy dist --project-name webapp-admin",
+    "deploy:test": "npm run build && CLOUDFLARE_API_TOKEN=6iYpM1QjAWIa5mcEDVbDLUK7P4DXh2tKcvA8HjeY wrangler pages deploy dist --project-name ko-event --env test",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:migrate:local": "wrangler d1 migrations apply webapp-production --local",
+    "db:migrate:prod": "wrangler d1 migrations apply webapp-production",
+    "db:migrate:test": "CLOUDFLARE_API_TOKEN=6iYpM1QjAWIa5mcEDVbDLUK7P4DXh2tKcvA8HjeY wrangler d1 migrations apply ko-event-db --env test --remote",
+    "db:console:local": "wrangler d1 execute webapp-production --local",
+    "db:console:prod": "wrangler d1 execute webapp-production",
+    "db:console:test": "CLOUDFLARE_API_TOKEN=6iYpM1QjAWIa5mcEDVbDLUK7P4DXh2tKcvA8HjeY wrangler d1 execute ko-event-db --env test --remote",
+    "git:init": "git init && git add . && git commit -m 'Initial commit'",
+    "git:commit": "git add . && git commit -m",
+    "git:status": "git status",
+    "git:log": "git log --oneline",
+    "clean-port": "fuser -k 3000/tcp 2>/dev/null || true",
+    "test": "curl http://localhost:3000"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "csv-parse": "^6.1.0",
+    "exceljs": "^4.4.0",
+    "hono": "^4.10.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250705.0",
+    "@hono/vite-build": "^1.2.0",
+    "@hono/vite-dev-server": "^0.18.2",
+    "typescript": "^5.0.0",
+    "vite": "^6.3.5",
+    "wrangler": "^4.4.0"
+  }
+}
