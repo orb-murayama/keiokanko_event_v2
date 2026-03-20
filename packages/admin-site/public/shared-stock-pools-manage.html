@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">共有在庫プール在庫管理 | 管理画面</title>
+  <meta name="description" content="共有在庫プール在庫管理 - イベント予約管理システム">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/reset.css?v=20260311">
+  <link rel="stylesheet" href="/css/variables.css?v=20260311">
+  <link rel="stylesheet" href="/css/components.css?v=20260311">
+  <link rel="stylesheet" href="/css/admin.css?v=20260311">
+  <link rel="stylesheet" href="/css/utilities.css?v=20260311">
+  
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="admin-main">
+    <div class="container">
+      <!-- パンくず -->
+      <nav class="breadcrumb">
+        <a href="/admin">管理画面</a>
+        <span class="separator">&gt;</span>
+        <a href="/shared-stock-pools-list.html">共有在庫プール管理</a>
+        <span class="separator">&gt;</span>
+        <span id="poolNameBreadcrumb">在庫管理</span>
+      </nav>
+
+      <!-- プール情報カード -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-info-circle"></i>
+            プール情報
+          </h2>
+        </div>
+        <div class="card-body">
+          <div class="form-row mb-4">
+            <div class="form-group">
+              <p class="text-muted text-sm mb-1">プール名</p>
+              <p class="font-semibold text-lg" id="poolNameDisplay">-</p>
+            </div>
+            <div class="form-group">
+              <p class="text-muted text-sm mb-1">プールコード</p>
+              <p class="font-semibold text-lg" id="poolCodeDisplay">-</p>
+            </div>
+          </div>
+          
+          <!-- 統計情報 -->
+          <div class="stats-grid">
+            <div class="stat-card stat-card-primary">
+              <div class="stat-label">総在庫</div>
+              <div class="stat-value" id="totalStockSum">0</div>
+            </div>
+            <div class="stat-card stat-card-danger">
+              <div class="stat-label">予約済</div>
+              <div class="stat-value" id="bookedSum">0</div>
+            </div>
+            <div class="stat-card stat-card-success">
+              <div class="stat-label">利用可能</div>
+              <div class="stat-value" id="availableSum">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 日別在庫一覧 -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-calendar-alt"></i>
+            日別在庫一覧
+          </h2>
+        </div>
+        <div class="card-body">
+          <div id="loading" class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+            <p class="mt-2 text-muted">読み込み中...</p>
+          </div>
+          
+          <div id="error" class="alert alert-danger" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorMessage">エラーが発生しました</span>
+          </div>
+          
+          <div id="stocksTableContainer" style="display: none;">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>時間帯</th>
+                    <th class="text-center">在庫数</th>
+                    <th class="text-center">予約済</th>
+                    <th class="text-center">利用可能</th>
+                    <th class="text-center">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="stocksTableBody">
+                  <!-- JavaScriptで動的生成 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 在庫追加フォーム -->
+      <div id="addFormSection" class="card mb-4">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-plus-circle"></i>
+            在庫追加
+          </h2>
+        </div>
+        <div class="card-body">
+          <form id="addStockForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="addDateStart" class="form-label required">開始日</label>
+                <input type="date" id="addDateStart" name="addDateStart" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="addDateEnd" class="form-label">終了日 <span class="text-muted text-sm">(省略可)</span></label>
+                <input type="date" id="addDateEnd" name="addDateEnd" class="form-input">
+                <small class="form-helper">
+                  <i class="fas fa-info-circle"></i>
+                  終了日を指定すると、期間内の在庫を一括追加できます
+                </small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="addTimeSlotLabel" class="form-label">時間帯ラベル</label>
+                <input type="text" id="addTimeSlotLabel" name="addTimeSlotLabel" class="form-input" 
+                       placeholder="例: 午前、1日ツアー">
+              </div>
+              <div class="form-group">
+                <label for="addTimeSlotStart" class="form-label">開始時刻</label>
+                <input type="time" id="addTimeSlotStart" name="addTimeSlotStart" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="addTimeSlotEnd" class="form-label">終了時刻</label>
+                <input type="time" id="addTimeSlotEnd" name="addTimeSlotEnd" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="addTotalStock" class="form-label required">総在庫数</label>
+              <input type="number" id="addTotalStock" name="addTotalStock" class="form-input" 
+                     required min="0" placeholder="50">
+            </div>
+
+            <div class="form-actions">
+              <button type="button" id="resetAddBtn" class="btn btn-secondary">
+                <i class="fas fa-redo"></i>
+                リセット
+              </button>
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-plus"></i>
+                在庫を追加
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 在庫編集フォーム（非表示） -->
+      <div id="editFormSection" class="card mb-4" style="display: none;">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-edit"></i>
+            在庫編集
+          </h2>
+        </div>
+        <div class="card-body">
+          <form id="editStockForm">
+            <input type="hidden" id="editStockId">
+            
+            <div class="form-group">
+              <label for="editDate" class="form-label required">日付</label>
+              <input type="date" id="editDate" name="editDate" class="form-input" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editTimeSlotLabel" class="form-label">時間帯ラベル</label>
+                <input type="text" id="editTimeSlotLabel" name="editTimeSlotLabel" class="form-input"
+                       placeholder="例: 午前、1日ツアー">
+              </div>
+              <div class="form-group">
+                <label for="editTimeSlotStart" class="form-label">開始時刻</label>
+                <input type="time" id="editTimeSlotStart" name="editTimeSlotStart" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="editTimeSlotEnd" class="form-label">終了時刻</label>
+                <input type="time" id="editTimeSlotEnd" name="editTimeSlotEnd" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="editTotalStock" class="form-label required">総在庫数</label>
+              <input type="number" id="editTotalStock" name="editTotalStock" class="form-input"
+                     required min="0" placeholder="50">
+            </div>
+
+            <div class="form-actions">
+              <button type="button" id="cancelEditBtn" class="btn btn-secondary">
+                <i class="fas fa-times"></i>
+                キャンセル
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                保存
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2025 イベント予約管理システム</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/js/modules/api.js?v=20260311"></script>
+  <script src="/js/modules/utils.js?v=20260311"></script>
+  <script src="/js/pages/admin.js?v=20260311"></script>
+  <script src="/js/pages/admin-shared-stock-pools-manage.js?v=20260311"></script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">クライアント登録 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <form id="clientForm">
+        <input type="hidden" id="clientId" name="clientId">
+        <input type="hidden" id="mode" name="mode">
+
+        <!-- 基本情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-info-circle"></i>
+            基本情報
+          </h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name" class="form-label">
+                <span class="text-danger">*</span> クライアント名
+              </label>
+              <input type="text" id="name" name="name" class="form-control" 
+                     placeholder="例: 株式会社サンプル" required>
+            </div>
+
+            <div class="form-group">
+              <label for="client_code" class="form-label">
+                <span class="text-danger">*</span> クライアントコード
+              </label>
+              <input type="text" id="client_code" name="client_code" class="form-control" 
+                     placeholder="例: CLI001" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact_person" class="form-label">
+                <span class="text-danger">*</span> 担当者名
+              </label>
+              <input type="text" id="contact_person" name="contact_person" class="form-control" 
+                     placeholder="例: 山田 太郎" required>
+            </div>
+
+            <div class="form-group">
+              <label for="position" class="form-label">
+                役職
+              </label>
+              <input type="text" id="position" name="position" class="form-control" 
+                     placeholder="例: 営業部長">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="branch_office" class="form-label">
+                部署・支店名
+              </label>
+              <input type="text" id="branch_office" name="branch_office" class="form-control" 
+                     placeholder="例: 東京本社">
+            </div>
+
+            <div class="form-group">
+              <label for="accounted_person" class="form-label">
+                経理担当者
+              </label>
+              <input type="text" id="accounted_person" name="accounted_person" class="form-control" 
+                     placeholder="例: 田中 花子">
+            </div>
+          </div>
+        </div>
+
+        <!-- 連絡先情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-phone"></i>
+            連絡先情報
+          </h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email" class="form-label">
+                <span class="text-danger">*</span> メールアドレス
+              </label>
+              <input type="email" id="email" name="email" class="form-control" 
+                     placeholder="例: client@example.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="tel" class="form-label">
+                <span class="text-danger">*</span> 電話番号
+              </label>
+              <input type="tel" id="tel" name="tel" class="form-control" 
+                     placeholder="例: 03-1234-5678" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fax" class="form-label">
+                FAX番号
+              </label>
+              <input type="tel" id="fax" name="fax" class="form-control" 
+                     placeholder="例: 03-1234-5679">
+            </div>
+          </div>
+        </div>
+
+        <!-- 住所情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-map-marker-alt"></i>
+            住所情報
+          </h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="zip" class="form-label">
+                <span class="text-danger">*</span> 郵便番号
+              </label>
+              <input type="text" id="zip" name="zip" class="form-control" 
+                     placeholder="例: 1000001" required>
+              <small class="form-hint">ハイフンなしで入力してください</small>
+            </div>
+
+            <div class="form-group">
+              <label for="pref_id" class="form-label">
+                <span class="text-danger">*</span> 都道府県
+              </label>
+              <select id="pref_id" name="pref_id" class="form-control" required>
+                <option value="">選択してください</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="addr" class="form-label">
+                <span class="text-danger">*</span> 住所
+              </label>
+              <input type="text" id="addr" name="addr" class="form-control" 
+                     placeholder="例: 東京都千代田区千代田1-1" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- その他の情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-cog"></i>
+            その他の情報
+          </h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="remarks" class="form-label">
+                備考
+              </label>
+              <textarea id="remarks" name="remarks" class="form-control" rows="3" 
+                        placeholder="備考があれば入力してください"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-check">
+                <input type="checkbox" id="enable_flg" name="enable_flg" class="form-check-input" checked>
+                <label for="enable_flg" class="form-check-label">
+                  有効化
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ボタン -->
+        <div class="form-actions">
+          <button type="button" onclick="window.location.href='/admin/clients'" class="btn btn-secondary">
+            <i class="fas fa-times"></i> キャンセル
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> 保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- JavaScript読み込み -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-client-edit.js"></script>
+</body>
+</html>

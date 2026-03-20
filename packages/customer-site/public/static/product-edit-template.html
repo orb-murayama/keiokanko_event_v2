@@ -1,0 +1,146 @@
+<!-- This template will be dynamically loaded with product data -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品編集 | 管理画面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold flex items-center gap-3">
+                <i class="fas fa-edit"></i>
+                商品編集
+            </h1>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-md border-b">
+        <div class="container mx-auto px-4">
+            <ul class="flex gap-6 py-4">
+                <li><a href="/" class="text-gray-700 hover:text-blue-600 flex items-center gap-2">
+                    <i class="fas fa-home"></i>トップページ
+                </a></li>
+                <li><a href="/admin" class="text-gray-700 hover:text-blue-600 flex items-center gap-2">
+                    <i class="fas fa-cog"></i>管理画面
+                </a></li>
+                <li><a href="/admin/products" class="text-gray-700 hover:text-blue-600 flex items-center gap-2">
+                    <i class="fas fa-box"></i>商品管理
+                </a></li>
+                <li><span class="text-green-600 font-semibold">編集</span></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+            <form id="productForm">
+                <input type="hidden" id="product_id">
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt text-blue-600 mr-1"></i>
+                        イベント <span class="text-red-500">*</span>
+                    </label>
+                    <select id="event_id" required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-box text-blue-600 mr-1"></i>
+                        商品名 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="name" required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="例：一般入場券">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-align-left text-blue-600 mr-1"></i>
+                        商品説明
+                    </label>
+                    <textarea id="description" rows="4" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="商品の詳細説明"></textarea>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            料金に含まれるもの
+                        </label>
+                        <textarea id="fee_include" rows="2" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="例：座席チケット、パンフレット"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            料金に含まれないもの
+                        </label>
+                        <textarea id="fee_exclude" rows="2" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="例：飲食代、駐車場代"></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        キャンセルポリシー
+                    </label>
+                    <textarea id="cancel_policy" rows="3" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="キャンセル規定を入力"></textarea>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            締切日（何日前）
+                        </label>
+                        <input type="number" id="closing_trade" min="0" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            公開状態
+                        </label>
+                        <select id="enable_flg" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="1">有効</option>
+                            <option value="0">無効</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 pt-6 mt-6 border-t">
+                    <button type="submit" 
+                        class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                        <i class="fas fa-save mr-2"></i>更新する
+                    </button>
+                    <a href="/admin/products" 
+                        class="bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition font-semibold inline-block">
+                        <i class="fas fa-times mr-2"></i>キャンセル
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto px-4 py-6 text-center">
+            <p>&copy; 2025 イベント予約管理システム</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <script src="/static/product-edit.js"></script>
+</body>
+</html>

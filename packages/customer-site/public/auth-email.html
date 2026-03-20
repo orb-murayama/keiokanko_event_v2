@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メール認証 | イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            animation: fadeInUp 0.5s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .otp-input {
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 8px;
+            font-weight: bold;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .timer {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .otp-display {
+            background: #fff3cd;
+            border: 2px dashed #ff6b6b;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .otp-display .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .otp-display .code {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .resend-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .resend-link a {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .resend-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* v-cloak: Vue読み込み前のコンテンツを非表示 */
+        [v-cloak] {
+            display: none !important;
+        }
+        
+        /* 初期ローディング表示 */
+        #loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Vue読み込み前のローディング表示 -->
+    <div id="loading-screen">
+        <div style="text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: #0369a1;"></i>
+            <p style="margin-top: 1rem; color: #666;">認証状態を確認しています...</p>
+        </div>
+    </div>
+    
+    <div id="app" v-cloak>
+        <div class="auth-container">
+            <h1><i class="fas fa-envelope"></i> メール認証</h1>
+            <p class="subtitle">ワンタイムパスワードでログイン</p>
+            
+            <!-- ステップ1: メールアドレス入力 -->
+            <div v-if="step === 1">
+                <div class="error" v-if="errorMessage">{{ errorMessage }}</div>
+                
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        v-model="email" 
+                        placeholder="example@email.com"
+                        @keyup.enter="sendOTP"
+                        :disabled="isLoading"
+                    >
+                </div>
+                
+                <button @click="sendOTP" :disabled="isLoading || !email">
+                    {{ isLoading ? '送信中...' : 'ワンタイムパスワードを送信' }}
+                </button>
+                
+                <!-- 新規会員登録リンク -->
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">
+                        会員登録がまだの方はこちら
+                    </p>
+                    <button 
+                        @click="skipToParticipantInfo" 
+                        style="background: white; color: #6366f1; border: 2px solid #6366f1;"
+                        :disabled="isLoading">
+                        <i class="fas fa-user-plus"></i> 新規会員として予約する
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ステップ2: OTP入力 -->
+            <div v-if="step === 2">
+                <div class="success">
+                    {{ email }} にワンタイムパスワードを送信しました。
+                </div>
+                
+                <!-- 開発モード: OTPコード表示 -->
+                <div class="otp-display" v-if="displayedOTP">
+                    <div class="label">
+                        <i class="fas fa-info-circle"></i> 開発モード：ワンタイムパスワード
+                    </div>
+                    <div class="code">{{ displayedOTP }}</div>
+                    <div style="font-size: 0.8rem; color: #999; margin-top: 10px;">
+                        このコードを下のフォームに入力してください
+                    </div>
+                </div>
+                
+                <div class="error" v-if="errorMessage">{{ errorMessage }}</div>
+                
+                <div class="form-group">
+                    <label for="otp">ワンタイムパスワード（6桁）</label>
+                    <input 
+                        type="text" 
+                        id="otp" 
+                        v-model="otpCode" 
+                        class="otp-input"
+                        placeholder="000000"
+                        maxlength="6"
+                        @keyup.enter="verifyOTP"
+                        @input="formatOTP"
+                        :disabled="isLoading"
+                    >
+                </div>
+                
+                <button @click="verifyOTP" :disabled="isLoading || otpCode.length !== 6">
+                    {{ isLoading ? '認証中...' : 'ログイン' }}
+                </button>
+                
+                <div class="timer" v-if="remainingTime > 0">
+                    有効期限: {{ formatTime(remainingTime) }}
+                </div>
+                
+                <div class="resend-link">
+                    <a href="#" @click.prevent="resendOTP" v-if="canResend">
+                        ワンタイムパスワードを再送信
+                    </a>
+                    <span v-else style="color: #999;">
+                        {{ resendCooldown }}秒後に再送信できます
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    step: 1,               // 1: メール入力, 2: OTP入力
+                    email: '',
+                    otpCode: '',
+                    displayedOTP: '',      // 開発用：画面に表示するOTP
+                    errorMessage: '',
+                    isLoading: false,
+                    
+                    // タイマー管理
+                    remainingTime: 600,    // 10分（秒）
+                    timerInterval: null,
+                    
+                    // 再送信制御
+                    canResend: false,
+                    resendCooldown: 60,
+                    resendInterval: null,
+                    
+                    // 遷移先（クエリパラメータで指定可能）
+                    nextPage: '/participant-info'
+                };
+            },
+            
+            methods: {
+                // OTP送信
+                async sendOTP() {
+                    if (!this.email) {
+                        this.errorMessage = 'メールアドレスを入力してください';
+                        return;
+                    }
+                    
+                    this.isLoading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await axios.post('/api/auth/send-otp', {
+                            email: this.email
+                        });
+                        
+                        if (response.data.success) {
+                            this.step = 2;
+                            // 開発モード：OTPを画面に表示（両方のキー名に対応）
+                            if (response.data.dev_otp) {
+                                this.displayedOTP = response.data.dev_otp;
+                            } else if (response.data.otp_code) {
+                                this.displayedOTP = response.data.otp_code;
+                            }
+                            this.startTimer();
+                            this.startResendCooldown();
+                        }
+                        
+                    } catch (error) {
+                        console.error('OTP send failed:', error);
+                        this.errorMessage = error.response?.data?.error || 'エラーが発生しました';
+                        
+                        if (error.response?.status === 429) {
+                            this.errorMessage = error.response.data.error;
+                        }
+                        
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                // OTP検証
+                async verifyOTP() {
+                    if (this.otpCode.length !== 6) {
+                        this.errorMessage = '6桁のワンタイムパスワードを入力してください';
+                        return;
+                    }
+                    
+                    this.isLoading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await axios.post('/api/auth/verify-otp', {
+                            email: this.email,
+                            code: this.otpCode
+                        });
+                        
+                        if (response.data.success) {
+                            // セッショントークンはhttpOnly Cookieに自動保存される
+                            // sessionStorage への保存は不要（XSS対策）
+                            
+                            // 会員情報のみ保存（認証情報ではない）
+                            sessionStorage.setItem('is_existing_member', response.data.is_existing_member);
+                            
+                            if (response.data.member) {
+                                sessionStorage.setItem('member', JSON.stringify(response.data.member));
+                            }
+                            
+                            // 次のページへ遷移（nextPageを使用）
+                            window.location.href = this.nextPage;
+                        }
+                        
+                    } catch (error) {
+                        console.error('OTP verification failed:', error);
+                        this.errorMessage = error.response?.data?.error || '認証に失敗しました';
+                        this.otpCode = '';  // OTPクリア
+                        
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                // OTP再送信
+                async resendOTP() {
+                    if (!this.canResend) return;
+                    
+                    this.otpCode = '';
+                    this.displayedOTP = '';
+                    this.errorMessage = '';
+                    await this.sendOTP();
+                },
+                
+                // OTP入力フォーマット（数字のみ）
+                formatOTP(event) {
+                    this.otpCode = this.otpCode.replace(/[^0-9]/g, '');
+                },
+                
+                // タイマー開始（10分）
+                startTimer() {
+                    this.remainingTime = 600;
+                    
+                    if (this.timerInterval) {
+                        clearInterval(this.timerInterval);
+                    }
+                    
+                    this.timerInterval = setInterval(() => {
+                        this.remainingTime--;
+                        
+                        if (this.remainingTime <= 0) {
+                            clearInterval(this.timerInterval);
+                            this.errorMessage = 'ワンタイムパスワードの有効期限が切れました';
+                            this.canResend = true;
+                        }
+                    }, 1000);
+                },
+                
+                // 再送信クールダウン（60秒）
+                startResendCooldown() {
+                    this.resendCooldown = 60;
+                    this.canResend = false;
+                    
+                    if (this.resendInterval) {
+                        clearInterval(this.resendInterval);
+                    }
+                    
+                    this.resendInterval = setInterval(() => {
+                        this.resendCooldown--;
+                        
+                        if (this.resendCooldown <= 0) {
+                            clearInterval(this.resendInterval);
+                            this.canResend = true;
+                        }
+                    }, 1000);
+                },
+                
+                // 時間フォーマット（秒 → MM:SS）
+                formatTime(seconds) {
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                },
+                
+                // 新規会員として参加者情報ページへ
+                skipToParticipantInfo() {
+                    // LocalStorageにフラグを保存（新規会員モード）
+                    localStorage.setItem('skipOTP', 'true');
+                    window.location.href = '/participant-info';
+                }
+            },
+            
+            async mounted() {
+                // クエリパラメータから遷移先を取得
+                const urlParams = new URLSearchParams(window.location.search);
+                const next = urlParams.get('next');
+                if (next) {
+                    this.nextPage = next;
+                }
+                
+                // 🔐 セッション認証状態を確認
+                try {
+                    const sessionResponse = await axios.get('/api/auth/session');
+                    
+                    if (sessionResponse.data.authenticated) {
+                        console.log('✅ 既に認証済みです。次のページへ遷移します。');
+                        
+                        // 商品選択データを確認（予約フローの場合のみ）
+                        if (this.nextPage === '/participant-info') {
+                            const bookingDraft = localStorage.getItem('bookingDraft');
+                            if (!bookingDraft) {
+                                alert('商品が選択されていません');
+                                window.location.href = '/product-detail';
+                                return;
+                            }
+                        }
+                        
+                        // リダイレクトする場合はローディング画面を残したままリダイレクト
+                        window.location.href = this.nextPage || '/product-detail';
+                        return;
+                    }
+                } catch (error) {
+                    console.log('🔓 未認証状態です。メール認証画面を表示します。');
+                }
+                
+                // 初期ローディング画面を削除（認証画面を表示する場合のみ）
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.remove();
+                }
+                
+                // 商品選択データを確認（予約フローの場合のみ）
+                if (this.nextPage === '/participant-info') {
+                    const bookingDraft = localStorage.getItem('bookingDraft');
+                    if (!bookingDraft) {
+                        alert('商品が選択されていません');
+                        window.location.href = '/product-detail';
+                    }
+                }
+            },
+            
+            beforeUnmount() {
+                // タイマークリア
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                if (this.resendInterval) clearInterval(this.resendInterval);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

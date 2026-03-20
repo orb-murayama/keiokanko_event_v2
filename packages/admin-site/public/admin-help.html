@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ヘルプ | 管理画面</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/utilities.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        .help-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .help-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        .help-card-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            margin-bottom: 16px;
+        }
+        .help-card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        .help-card-description {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .help-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .help-card-link:hover {
+            background: #5568d3;
+        }
+        .help-card-link i {
+            font-size: 16px;
+        }
+        .help-section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 32px 0 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .help-intro {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+        .help-intro p {
+            color: #4a5568;
+            line-height: 1.8;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー（共通コンポーネント） -->
+    <div id="common-header"></div>
+
+    <div class="admin-container">
+        <!-- サイドバー（共通コンポーネント） -->
+        <div id="common-sidebar"></div>
+
+        <!-- メインコンテンツ -->
+        <main class="admin-main">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <i class="fas fa-question-circle"></i>
+                    ヘルプ
+                </h1>
+            </div>
+
+            <div class="content-body">
+                <!-- イントロダクション -->
+                <div class="help-intro">
+                    <p><strong>📚 ヘルプセンターへようこそ</strong></p>
+                    <p>システムの使い方や各機能の詳細について、以下のガイドをご参照ください。</p>
+                    <p>今後、さらに多くのヘルプコンテンツを追加予定です。</p>
+                </div>
+
+                <!-- プレースホルダーガイド -->
+                <h2 class="help-section-title">
+                    <i class="fas fa-code"></i> プレースホルダーガイド
+                </h2>
+                <div class="help-grid">
+                    <!-- メールプレースホルダー -->
+                    <div class="help-card">
+                        <div class="help-card-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 class="help-card-title">メールプレースホルダー一覧</h3>
+                        <p class="help-card-description">
+                            一括メール送信で使用できるプレースホルダーの完全ガイド。予約情報、顧客情報、イベント情報、金額情報などを動的に挿入できます。
+                        </p>
+                        <a href="/email-placeholder-help.html" class="help-card-link" target="_blank">
+                            <i class="fas fa-external-link-alt"></i>
+                            ガイドを開く
+                        </a>
+                    </div>
+
+                    <!-- 帳票プレースホルダー -->
+                    <div class="help-card">
+                        <div class="help-card-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h3 class="help-card-title">帳票プレースホルダー一覧</h3>
+                        <p class="help-card-description">
+                            帳票一括生成で使用できるプレースホルダーの完全ガイド。Excelテンプレートでの使用方法や、繰り返し行の自動展開について解説します。
+                        </p>
+                        <a href="/document-placeholder-help.html" class="help-card-link" target="_blank">
+                            <i class="fas fa-external-link-alt"></i>
+                            ガイドを開く
+                        </a>
+                    </div>
+                </div>
+
+                <!-- その他のヘルプ -->
+                <h2 class="help-section-title">
+                    <i class="fas fa-book"></i> その他のガイド
+                </h2>
+                <div class="help-grid">
+                    <!-- プレースホルダー：今後追加予定 -->
+                    <div class="help-card" style="opacity: 0.6; pointer-events: none;">
+                        <div class="help-card-icon" style="background: #cbd5e0;">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3 class="help-card-title">システム利用ガイド</h3>
+                        <p class="help-card-description">
+                            システムの基本的な使い方や、各機能の詳細な操作方法を解説します。
+                        </p>
+                        <span class="help-card-link" style="background: #cbd5e0; cursor: not-allowed;">
+                            <i class="fas fa-clock"></i>
+                            準備中
+                        </span>
+                    </div>
+
+                    <div class="help-card" style="opacity: 0.6; pointer-events: none;">
+                        <div class="help-card-icon" style="background: #cbd5e0;">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3 class="help-card-title">チュートリアル動画</h3>
+                        <p class="help-card-description">
+                            各機能の使い方を動画で分かりやすく解説します。
+                        </p>
+                        <span class="help-card-link" style="background: #cbd5e0; cursor: not-allowed;">
+                            <i class="fas fa-clock"></i>
+                            準備中
+                        </span>
+                    </div>
+
+                    <div class="help-card" style="opacity: 0.6; pointer-events: none;">
+                        <div class="help-card-icon" style="background: #cbd5e0;">
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <h3 class="help-card-title">よくある質問（FAQ）</h3>
+                        <p class="help-card-description">
+                            よくあるご質問とその回答をまとめました。
+                        </p>
+                        <span class="help-card-link" style="background: #cbd5e0; cursor: not-allowed;">
+                            <i class="fas fa-clock"></i>
+                            準備中
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 共通コンポーネント読み込み -->
+    <script src="/static/js/components/common-header.js"></script>
+</body>
+</html>

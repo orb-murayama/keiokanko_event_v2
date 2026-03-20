@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMOペイメントゲートウェイ - コンビニ決済</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* GMO風ヘッダー */
+        .gmo-header {
+            background: #003da5;
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        .gmo-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .gmo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* メインコンテンツ */
+        .payment-container {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .order-info {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .order-info-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #003da5;
+            padding-bottom: 8px;
+        }
+        .order-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95rem;
+        }
+        .order-info-label {
+            color: #666;
+        }
+        .order-info-value {
+            font-weight: 600;
+            color: #333;
+        }
+        .order-total {
+            font-size: 1.2rem;
+            color: #d32f2f;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        /* コンビニ選択 */
+        .form-section {
+            margin-bottom: 25px;
+        }
+        .form-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-section-title i {
+            color: #003da5;
+        }
+        
+        .convenience-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .convenience-option {
+            border: 3px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .convenience-option:hover {
+            border-color: #003da5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 61, 165, 0.2);
+        }
+        .convenience-option.selected {
+            border-color: #003da5;
+            background: #e3f2fd;
+        }
+        .convenience-option input[type="radio"] {
+            display: none;
+        }
+        .convenience-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #003da5;
+        }
+        .convenience-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* お支払い期限 */
+        .payment-deadline {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .payment-deadline-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .payment-deadline-date {
+            font-size: 1.1rem;
+            color: #d32f2f;
+            font-weight: 700;
+        }
+        
+        /* 注意事項 */
+        .notice-box {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .notice-title {
+            font-weight: 600;
+            color: #0d47a1;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notice-list {
+            font-size: 0.9rem;
+            color: #1565c0;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+        .notice-list li {
+            margin-bottom: 5px;
+        }
+        
+        /* エラーメッセージ */
+        .error-message {
+            background: #ffebee;
+            border: 2px solid #ef5350;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+        .error-message i {
+            margin-right: 8px;
+        }
+        
+        /* ローディング */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #003da5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ボタン */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            color: white;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(211, 47, 47, 0.4);
+        }
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* フッター */
+        .gmo-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .gmo-footer-logo {
+            font-weight: 600;
+            color: #003da5;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- GMOヘッダー -->
+            <div class="gmo-header">
+                <div class="gmo-logo">
+                    <i class="fas fa-store"></i> GMO ペイメントゲートウェイ
+                </div>
+                <div class="gmo-subtitle">コンビニ決済</div>
+            </div>
+            
+            <!-- メインコンテンツ -->
+            <div class="payment-container">
+                <!-- 注文情報 -->
+                <div class="order-info">
+                    <div class="order-info-title">
+                        <i class="fas fa-receipt"></i> ご注文内容
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">予約番号</span>
+                        <span class="order-info-value">{{ bookingNumber }}</span>
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">イベント名</span>
+                        <span class="order-info-value">{{ eventName }}</span>
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">参加日</span>
+                        <span class="order-info-value">{{ participationDate }}</span>
+                    </div>
+                    <div class="order-info-row order-total">
+                        <span class="order-info-label">お支払い金額</span>
+                        <span class="order-info-value">¥{{ totalAmount.toLocaleString() }}</span>
+                    </div>
+                </div>
+                
+                <!-- お支払い期限 -->
+                <div class="payment-deadline">
+                    <div class="payment-deadline-title">
+                        <i class="fas fa-clock"></i> お支払い期限
+                    </div>
+                    <div class="payment-deadline-date">{{ paymentDeadline }}</div>
+                </div>
+                
+                <!-- エラーメッセージ -->
+                <div class="error-message" :class="{ show: errorMessage }">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ errorMessage }}
+                </div>
+                
+                <!-- ローディング -->
+                <div class="loading" :class="{ show: isProcessing }">
+                    <div class="spinner"></div>
+                    <div>払込票番号を発行しています。しばらくお待ちください...</div>
+                </div>
+                
+                <!-- コンビニ選択 -->
+                <template v-if="!isProcessing">
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-store"></i>
+                            お支払いいただくコンビニを選択してください
+                        </div>
+                        
+                        <div class="convenience-grid">
+                            <label class="convenience-option" :class="{ selected: selectedStore === 'seven' }">
+                                <input type="radio" name="store" value="seven" v-model="selectedStore">
+                                <div class="convenience-icon">🏪</div>
+                                <div class="convenience-name">セブン-イレブン</div>
+                            </label>
+                            
+                            <label class="convenience-option" :class="{ selected: selectedStore === 'lawson' }">
+                                <input type="radio" name="store" value="lawson" v-model="selectedStore">
+                                <div class="convenience-icon">🏬</div>
+                                <div class="convenience-name">ローソン</div>
+                            </label>
+                            
+                            <label class="convenience-option" :class="{ selected: selectedStore === 'familymart' }">
+                                <input type="radio" name="store" value="familymart" v-model="selectedStore">
+                                <div class="convenience-icon">🏪</div>
+                                <div class="convenience-name">ファミリーマート</div>
+                            </label>
+                            
+                            <label class="convenience-option" :class="{ selected: selectedStore === 'ministop' }">
+                                <input type="radio" name="store" value="ministop" v-model="selectedStore">
+                                <div class="convenience-icon">🏬</div>
+                                <div class="convenience-name">ミニストップ</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- 注意事項 -->
+                    <div class="notice-box">
+                        <div class="notice-title">
+                            <i class="fas fa-info-circle"></i> ご注意事項
+                        </div>
+                        <ul class="notice-list">
+                            <li>払込票番号の発行後、期限内にお支払いください</li>
+                            <li>お支払い手数料として別途220円がかかります</li>
+                            <li>お支払い確認後、ご予約が確定いたします</li>
+                            <li>期限を過ぎると自動的にキャンセルとなります</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- ボタン -->
+                    <div class="button-group">
+                        <button class="btn-cancel" @click="cancelPayment">
+                            <i class="fas fa-times"></i> キャンセル
+                        </button>
+                        <button class="btn-submit" @click="processPayment" :disabled="!selectedStore">
+                            <i class="fas fa-barcode"></i> 払込票番号を発行
+                        </button>
+                    </div>
+                </template>
+            </div>
+            
+            <!-- フッター -->
+            <div class="gmo-footer">
+                <div class="gmo-footer-logo">GMO Payment Gateway, Inc.</div>
+                <div>Powered by GMO-PG (ダミー決済画面)</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    bookingNumber: '',
+                    eventName: '',
+                    participationDate: '',
+                    totalAmount: 0,
+                    paymentDeadline: '',
+                    selectedStore: '',
+                    errorMessage: '',
+                    isProcessing: false
+                };
+            },
+            methods: {
+                loadPaymentInfo() {
+                    // URLパラメータから情報を取得
+                    const params = new URLSearchParams(window.location.search);
+                    this.bookingNumber = params.get('booking_number') || 'BK20240218001';
+                    this.eventName = params.get('event_name') || '東京1日観光ツアー';
+                    this.participationDate = params.get('date') || '2024年3月15日';
+                    this.totalAmount = parseInt(params.get('amount') || '15000');
+                    
+                    // 支払い期限を計算（3日後）
+                    const deadline = new Date();
+                    deadline.setDate(deadline.getDate() + 3);
+                    this.paymentDeadline = deadline.toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                },
+                
+                async processPayment() {
+                    this.errorMessage = '';
+                    
+                    if (!this.selectedStore) {
+                        this.errorMessage = 'コンビニを選択してください';
+                        return;
+                    }
+                    
+                    // 処理開始
+                    this.isProcessing = true;
+                    
+                    // ダミー処理: 2秒待機
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // 払込票番号を生成
+                    const paymentCode = 'CVS' + Date.now().toString().slice(-10);
+                    
+                    // 成功: コールバックURLへリダイレクト
+                    const callbackUrl = `/payment-callback?` +
+                        `booking_number=${this.bookingNumber}&` +
+                        `status=success&` +
+                        `payment_method=convenience&` +
+                        `store=${this.selectedStore}&` +
+                        `payment_code=${paymentCode}&` +
+                        `amount=${this.totalAmount}&` +
+                        `deadline=${encodeURIComponent(this.paymentDeadline)}`;
+                    
+                    window.location.href = callbackUrl;
+                },
+                
+                cancelPayment() {
+                    if (confirm('コンビニ決済の申込をキャンセルしてよろしいですか？')) {
+                        const callbackUrl = `/payment-callback?` +
+                            `booking_number=${this.bookingNumber}&` +
+                            `status=cancelled&` +
+                            `payment_method=convenience`;
+                        
+                        window.location.href = callbackUrl;
+                    }
+                }
+            },
+            mounted() {
+                this.loadPaymentInfo();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "@keiokanko/customer-site",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "エンドユーザー向けサイト - イベント予約・購入",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "vite",
+    "dev:sandbox": "wrangler pages dev dist --d1=webapp-v2-production --local --ip 0.0.0.0 --port 3001",
+    "build": "vite build && npm run copy-static",
+    "copy-static": "cp -r public/css public/js public/images public/templates dist/static/ && cp public/*.html dist/ 2>/dev/null || true",
+    "preview": "wrangler pages dev",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name keiokanko-customer"
+  },
+  "dependencies": {
+    "@keiokanko/shared": "workspace:*",
+    "hono": "^4.10.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250705.0",
+    "@hono/vite-build": "^1.2.0",
+    "@hono/vite-dev-server": "^0.18.2",
+    "typescript": "^5.0.0",
+    "vite": "^6.3.5",
+    "wrangler": "^4.4.0"
+  }
+}

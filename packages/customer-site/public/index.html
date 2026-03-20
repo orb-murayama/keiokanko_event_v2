@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="イベント予約管理システム - イベントのチケットとオプションの販売・予約管理">
+  <title>イベント予約管理システム</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+</div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main id="main-content">
+    <!-- ヒーローセクション -->
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero-title">イベント予約管理システム</h1>
+        <p class="hero-subtitle">イベントのチケットとオプションをオンラインで簡単予約</p>
+        <div class="hero-actions">
+          <a href="/events" class="btn btn-primary btn-lg">
+            <i class="fas fa-search"></i>
+            イベントを探す
+          </a>
+          <a href="/my-bookings" class="btn btn-secondary btn-lg">
+            <i class="fas fa-list"></i>
+            予約を確認する
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- システム概要 -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">システム概要</h2>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 class="feature-title">簡単予約</h3>
+            <p class="feature-description">
+              オンラインで24時間いつでもイベントチケットを予約できます。
+              複数の価格帯やオプションから選択可能です。
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+            <h3 class="feature-title">多彩なチケット</h3>
+            <p class="feature-description">
+              イベントごとに様々な種類のチケットをご用意。
+              大人・子供・シニアなど、複数の価格帯に対応しています。
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-utensils"></i>
+            </div>
+            <h3 class="feature-title">便利なオプション</h3>
+            <p class="feature-description">
+              お弁当、駐車場、シャトルバスなど、イベントをより楽しむための
+              オプションサービスを追加できます。
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3 class="feature-title">スマホ対応</h3>
+            <p class="feature-description">
+              PC、スマートフォン、タブレットなど、あらゆるデバイスから
+              快適にご利用いただけます。
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-search"></i>
+            </div>
+            <h3 class="feature-title">予約確認</h3>
+            <p class="feature-description">
+              メールアドレスで簡単に予約内容を確認できます。
+              予約番号や参加者情報もいつでも閲覧可能です。
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="feature-title">安心・安全</h3>
+            <p class="feature-description">
+              個人情報は厳重に管理され、セキュアな環境で
+              予約処理が行われます。
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 人気のイベント -->
+    <section class="section bg-light">
+      <div class="container">
+        <h2 class="section-title">人気のイベント</h2>
+        <div id="popular-events" class="events-grid">
+          <!-- JavaScriptで動的に生成 -->
+        </div>
+        <div class="section-footer">
+          <a href="/events" class="btn btn-primary">
+            すべてのイベントを見る
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 利用の流れ -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">ご利用の流れ</h2>
+        <ol class="steps-list">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3 class="step-title">イベントを選ぶ</h3>
+              <p class="step-description">
+                イベント一覧から参加したいイベントを選択します。
+              </p>
+            </div>
+          </li>
+
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3 class="step-title">チケットを選ぶ</h3>
+              <p class="step-description">
+                価格帯や日程を選択し、必要な枚数を指定します。
+              </p>
+            </div>
+          </li>
+
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3 class="step-title">オプションを追加</h3>
+              <p class="step-description">
+                お弁当や駐車場など、必要なオプションを選択します。
+              </p>
+            </div>
+          </li>
+
+          <li class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3 class="step-title">個人情報を入力</h3>
+              <p class="step-description">
+                お名前、メールアドレス、連絡先を入力します。
+              </p>
+            </div>
+          </li>
+
+          <li class="step-item">
+            <div class="step-number">5</div>
+            <div class="step-content">
+              <h3 class="step-title">予約完了</h3>
+              <p class="step-description">
+                確認メールが届き、予約が完了します。
+              </p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <!-- フッター -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 class="footer-title">イベント予約管理システム</h4>
+          <p class="footer-description">
+            イベントのチケットとオプションをオンラインで簡単に予約・管理できるシステムです。
+          </p>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">リンク</h4>
+          <ul class="footer-links">
+            <li><a href="/">トップページ</a></li>
+            <li><a href="/events">イベント一覧</a></li>
+            <li><a href="/my-bookings">マイページ</a></li>
+            <li><a href="/admin">管理画面</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">お問い合わせ</h4>
+          <ul class="footer-contact">
+            <li>
+              <i class="fas fa-envelope"></i>
+              <a href="mailto:info@example.com">info@example.com</a>
+            </li>
+            <li>
+              <i class="fas fa-phone"></i>
+              <a href="tel:0120-000-000">0120-000-000</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 イベント予約管理システム. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script type="module" src="/js/pages/home.js"></script>
+</body>
+</html>

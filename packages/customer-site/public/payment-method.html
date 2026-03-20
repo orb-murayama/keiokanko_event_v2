@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>決済方法選択 | イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        /* パンくずナビゲーション */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .breadcrumb-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .breadcrumb-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: #e5e7eb;
+            color: #9ca3af;
+            transition: all 0.3s;
+        }
+        .breadcrumb-step.active .breadcrumb-number {
+            background: #6366f1;
+            color: white;
+        }
+        .breadcrumb-step.completed .breadcrumb-number {
+            background: #10b981;
+            color: white;
+        }
+        .breadcrumb-label {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+        .breadcrumb-step.active .breadcrumb-label {
+            color: #6366f1;
+            font-weight: 600;
+        }
+        .breadcrumb-step.completed .breadcrumb-label {
+            color: #10b981;
+        }
+        .breadcrumb-arrow {
+            color: #d1d5db;
+            margin: 0 15px;
+            font-size: 0.9rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #6366f1;
+        }
+        
+        /* 予約サマリー */
+        .booking-summary {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .booking-summary .title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 15px;
+        }
+        .booking-summary .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #bae6fd;
+        }
+        .booking-summary .item:last-child {
+            border-bottom: none;
+        }
+        .booking-summary .item.subtotal {
+            font-weight: 600;
+            color: #333;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #cbd5e1;
+        }
+        .booking-summary .item.fee {
+            color: #dc2626;
+            font-weight: 500;
+        }
+        .booking-summary .item.total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0369a1;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #0369a1;
+        }
+        
+        /* 決済方法選択 */
+        .payment-methods {
+            display: grid;
+            gap: 15px;
+        }
+        .payment-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .payment-option:hover {
+            border-color: #6366f1;
+            background: #f9fafb;
+        }
+        .payment-option.selected {
+            border-color: #6366f1;
+            background: #eff6ff;
+        }
+        .payment-option.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        .payment-option.disabled:hover {
+            border-color: #d1d5db;
+            background: #f3f4f6;
+        }
+        .payment-option input[type="radio"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        .payment-option input[type="radio"]:disabled {
+            cursor: not-allowed;
+        }
+        .payment-option-content {
+            flex: 1;
+        }
+        .payment-option-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .payment-option-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .payment-option-warning {
+            font-size: 0.9rem;
+            color: #dc2626;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+        .payment-option-warning small {
+            font-size: 0.85rem;
+            color: #991b1b;
+        }
+        .payment-option-icon {
+            font-size: 2rem;
+            color: #6366f1;
+        }
+        
+        .card-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .card-icons i {
+            font-size: 2rem;
+            color: #666;
+        }
+        
+        /* 銀行振込口座情報アコーディオン */
+        .bank-info-accordion {
+            background: #f9fafb;
+            border: 2px solid #6366f1;
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .bank-info-header {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .bank-info-header i {
+            margin-right: 8px;
+        }
+        .bank-info-content {
+            padding: 20px;
+        }
+        .bank-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .bank-info-row:last-of-type {
+            border-bottom: none;
+        }
+        .bank-info-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 120px;
+        }
+        .bank-info-value {
+            color: #333;
+            font-weight: 500;
+            text-align: right;
+        }
+        .bank-info-notice {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #92400e;
+            line-height: 1.5;
+        }
+        .bank-info-notice i {
+            margin-right: 8px;
+            color: #f59e0b;
+        }
+        
+        /* エラー表示 */
+        .error {
+            background: #fee2e2;
+            border: 2px solid #f87171;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        /* ボタン */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        button.primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        button.secondary {
+            background: #f3f4f6;
+            color: #555;
+        }
+        button.secondary:hover {
+            background: #e5e7eb;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* ローディング */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- パンくずナビゲーション -->
+            <div class="breadcrumb">
+                <div class="breadcrumb-step completed">
+                    <div class="breadcrumb-number"><i class="fas fa-check"></i></div>
+                    <span class="breadcrumb-label">商品選択</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step completed">
+                    <div class="breadcrumb-number"><i class="fas fa-check"></i></div>
+                    <span class="breadcrumb-label">メール認証</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step completed">
+                    <div class="breadcrumb-number"><i class="fas fa-check"></i></div>
+                    <span class="breadcrumb-label">参加者情報</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step active">
+                    <div class="breadcrumb-number">4</div>
+                    <span class="breadcrumb-label">決済方法</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step">
+                    <div class="breadcrumb-number">5</div>
+                    <span class="breadcrumb-label">予約完了</span>
+                </div>
+            </div>
+            
+            <!-- ヘッダー -->
+            <div class="header">
+                <h1><i class="fas fa-credit-card"></i> 決済方法選択</h1>
+                <p class="subtitle">お支払い方法を選択してください</p>
+            </div>
+
+            <div class="error" v-if="errorMessage">{{ errorMessage }}</div>
+            
+            <div v-if="isLoading" class="loading">
+                <div class="spinner"></div>
+                <p>予約情報を読み込んでいます...</p>
+            </div>
+
+            <template v-else>
+                <!-- 予約サマリー -->
+                <div class="booking-summary" v-if="bookingData">
+                    <div class="title"><i class="fas fa-shopping-cart"></i> 予約内容</div>
+                    <div class="item">
+                        <span>イベント</span>
+                        <span>{{ bookingData.event_name }}</span>
+                    </div>
+                    <div class="item">
+                        <span>参加日</span>
+                        <span>{{ bookingData.participation_date }}</span>
+                    </div>
+                    <div class="item" v-for="item in bookingData.items" :key="item.id">
+                        <span>{{ item.name }} ({{ item.category }})</span>
+                        <span>{{ item.quantity }}名 × ¥{{ (item.unit_price || 0).toLocaleString() }}</span>
+                    </div>
+                    <div class="item subtotal">
+                        <span>小計</span>
+                        <span>¥{{ (bookingData.total_amount || 0).toLocaleString() }}</span>
+                    </div>
+                    <div class="item fee" v-if="paymentFee > 0">
+                        <span>決済手数料（{{ paymentFeeName }}）</span>
+                        <span>¥{{ paymentFee.toLocaleString() }}</span>
+                    </div>
+                    <div class="item total">
+                        <span>合計金額</span>
+                        <span>¥{{ (finalTotalAmount).toLocaleString() }}</span>
+                    </div>
+                </div>
+
+                <!-- 0円の場合の案内 -->
+                <div class="section" v-if="finalTotalAmount === 0">
+                    <div class="section-title">お支払い</div>
+                    <p style="color: #666; line-height: 1.8; font-size: 1rem;">
+                        <i class="fas fa-info-circle" style="color: #6366f1;"></i> 
+                        合計金額が0円のため、お支払いは不要です。<br>
+                        「予約を確定する」ボタンをクリックして予約を完了してください。
+                    </p>
+                </div>
+
+                <!-- 決済方法選択（合計金額が0円より大きい場合のみ表示） -->
+                <div class="section" v-if="finalTotalAmount > 0">
+                    <div class="section-title">お支払い方法</div>
+                    
+                    <div class="payment-methods">
+                        <!-- クレジットカード決済 -->
+                        <div v-if="isPaymentMethodAvailable('credit_card')" 
+                             class="payment-option" 
+                             :class="{ selected: paymentMethod === 'credit_card' }" 
+                             @click="selectPaymentMethod('credit_card')">
+                            <input type="radio" name="payment_method" value="credit_card" v-model="paymentMethod">
+                            <div class="payment-option-content">
+                                <div class="payment-option-title">クレジットカード決済</div>
+                                <div class="payment-option-desc">VISA、Mastercard、JCB、AMEX対応（GMO決済画面へ遷移します）</div>
+                                <div class="card-icons">
+                                    <i class="fab fa-cc-visa"></i>
+                                    <i class="fab fa-cc-mastercard"></i>
+                                    <i class="fab fa-cc-jcb"></i>
+                                    <i class="fab fa-cc-amex"></i>
+                                </div>
+                            </div>
+                            <div class="payment-option-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                        </div>
+
+                        <!-- コンビニ決済 -->
+                        <div v-if="isPaymentMethodAvailable('convenience')" 
+                             class="payment-option" 
+                             :class="{ selected: paymentMethod === 'convenience', disabled: !canSelectConvenience }" 
+                             @click="selectPaymentMethod('convenience')">
+                            <input type="radio" name="payment_method" value="convenience" v-model="paymentMethod" :disabled="!canSelectConvenience">
+                            <div class="payment-option-content">
+                                <div class="payment-option-title">コンビニ決済</div>
+                                <div class="payment-option-desc" v-if="canSelectConvenience">
+                                    セブンイレブン、ファミリーマート、ローソン等（GMO決済画面へ遷移します）<br>
+                                    <strong>お支払期限: {{ formatDate(convenienceDeadline) }}まで</strong>
+                                </div>
+                                <div class="payment-option-warning" v-else>
+                                    ⚠️ お支払期限が参加日以降となるため、この決済方法はご利用いただけません<br>
+                                    <small>（参加日: {{ formatDate(nearestParticipationDate) }} / お支払期限: {{ formatDate(convenienceDeadline) }}）</small>
+                                </div>
+                            </div>
+                            <div class="payment-option-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                        </div>
+
+                        <!-- 銀行振込 -->
+                        <div v-if="isPaymentMethodAvailable('bank_transfer')" 
+                             class="payment-option" 
+                             :class="{ selected: paymentMethod === 'bank_transfer', disabled: !canSelectBankTransfer }" 
+                             @click="selectPaymentMethod('bank_transfer')">
+                            <input type="radio" name="payment_method" value="bank_transfer" v-model="paymentMethod" :disabled="!canSelectBankTransfer">
+                            <div class="payment-option-content">
+                                <div class="payment-option-title">銀行振込</div>
+                                <div class="payment-option-desc" v-if="canSelectBankTransfer">
+                                    指定口座へのお振込み<br>
+                                    <strong>お振込期限: {{ formatDate(bankTransferDeadline) }}まで</strong>
+                                </div>
+                                <div class="payment-option-warning" v-else>
+                                    ⚠️ お振込期限が参加日以降となるため、この決済方法はご利用いただけません<br>
+                                    <small>（参加日: {{ formatDate(nearestParticipationDate) }} / お振込期限: {{ formatDate(bankTransferDeadline) }}）</small>
+                                </div>
+                            </div>
+                            <div class="payment-option-icon">
+                                <i class="fas fa-building-columns"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- 銀行振込口座情報（アコーディオン） -->
+                        <div v-if="paymentMethod === 'bank_transfer' && eventInfo" class="bank-info-accordion">
+                            <div class="bank-info-header">
+                                <i class="fas fa-university"></i> お振込先口座情報
+                            </div>
+                            <div class="bank-info-content">
+                                <div class="bank-info-row">
+                                    <span class="bank-info-label">銀行名</span>
+                                    <span class="bank-info-value">{{ eventInfo.bank_name || '未設定' }}</span>
+                                </div>
+                                <div class="bank-info-row">
+                                    <span class="bank-info-label">支店名</span>
+                                    <span class="bank-info-value">{{ eventInfo.bank_branch || '未設定' }}</span>
+                                </div>
+                                <div class="bank-info-row">
+                                    <span class="bank-info-label">口座種別</span>
+                                    <span class="bank-info-value">{{ formatBankAccountType(eventInfo.bank_account_type) || '未設定' }}</span>
+                                </div>
+                                <div class="bank-info-row">
+                                    <span class="bank-info-label">口座番号</span>
+                                    <span class="bank-info-value">{{ eventInfo.bank_account_number || '未設定' }}</span>
+                                </div>
+                                <div class="bank-info-row">
+                                    <span class="bank-info-label">口座名義</span>
+                                    <span class="bank-info-value">{{ eventInfo.bank_account_name || '未設定' }}</span>
+                                </div>
+                                <div class="bank-info-notice">
+                                    <i class="fas fa-info-circle"></i> 
+                                    振込手数料はお客様負担となります。お振込みが確認でき次第、ご予約が確定いたします。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ボタン -->
+                <div class="button-group">
+                    <button class="secondary" @click="goBack">
+                        <i class="fas fa-arrow-left"></i> 戻る
+                    </button>
+                    <button class="primary" @click="proceedToConfirm" :disabled="finalTotalAmount > 0 && !paymentMethod">
+                        予約を確定する <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    errorMessage: '',
+                    isLoading: true,
+                    bookingData: null,
+                    eventInfo: null,
+                    paymentMethod: '',  // credit_card, convenience, bank_transfer
+                    availablePaymentMethods: []
+                };
+            },
+            computed: {
+                // 決済手数料を計算
+                paymentFee() {
+                    if (!this.paymentMethod || !this.eventInfo || !this.bookingData) {
+                        return 0;
+                    }
+                    
+                    const subtotal = this.bookingData.total_amount || 0;
+                    let fee = 0;
+                    
+                    switch (this.paymentMethod) {
+                        case 'credit_card':
+                            if (this.eventInfo.credit_fee_type === 'percentage') {
+                                fee = Math.floor(subtotal * (this.eventInfo.credit_fee_percentage || 0) / 100);
+                            } else if (this.eventInfo.credit_fee_type === 'fixed') {
+                                fee = this.eventInfo.credit_fee_fixed || 0;
+                            }
+                            break;
+                        case 'bank_transfer':
+                            if (this.eventInfo.bank_fee_type === 'percentage') {
+                                fee = Math.floor(subtotal * (this.eventInfo.bank_fee_percentage || 0) / 100);
+                            } else if (this.eventInfo.bank_fee_type === 'fixed') {
+                                fee = this.eventInfo.bank_fee_fixed || 0;
+                            }
+                            break;
+                        case 'convenience':
+                            if (this.eventInfo.convenience_fee_type === 'percentage') {
+                                fee = Math.floor(subtotal * (this.eventInfo.convenience_fee_percentage || 0) / 100);
+                            } else if (this.eventInfo.convenience_fee_type === 'fixed') {
+                                fee = this.eventInfo.convenience_fee_fixed || 0;
+                            }
+                            break;
+                    }
+                    
+                    return fee;
+                },
+                // 決済手数料名
+                paymentFeeName() {
+                    switch (this.paymentMethod) {
+                        case 'credit_card':
+                            return 'クレジットカード';
+                        case 'bank_transfer':
+                            return '銀行振込';
+                        case 'convenience':
+                            return 'コンビニ';
+                        default:
+                            return '決済手数料';
+                    }
+                },
+                // 最終合計金額（小計+手数料）
+                finalTotalAmount() {
+                    const subtotal = this.bookingData?.total_amount || 0;
+                    return subtotal + this.paymentFee;
+                },
+                // 銀行振込期限を計算（日本時間基準）
+                bankTransferDeadline() {
+                    if (!this.eventInfo?.bank_transfer_deadline) return null;
+                    // 日本時間（JST: UTC+9）の今日の日付を取得
+                    const now = new Date();
+                    const jstOffset = 9 * 60; // JSTはUTC+9時間（分単位）
+                    const jstTime = new Date(now.getTime() + (jstOffset + now.getTimezoneOffset()) * 60000);
+                    const today = new Date(jstTime.getFullYear(), jstTime.getMonth(), jstTime.getDate());
+                    
+                    const deadline = new Date(today);
+                    deadline.setDate(deadline.getDate() + this.eventInfo.bank_transfer_deadline);
+                    return deadline;
+                },
+                // コンビニ決済期限を計算（日本時間基準）
+                convenienceDeadline() {
+                    if (!this.eventInfo?.convenience_payment_deadline) return null;
+                    // 日本時間（JST: UTC+9）の今日の日付を取得
+                    const now = new Date();
+                    const jstOffset = 9 * 60; // JSTはUTC+9時間（分単位）
+                    const jstTime = new Date(now.getTime() + (jstOffset + now.getTimezoneOffset()) * 60000);
+                    const today = new Date(jstTime.getFullYear(), jstTime.getMonth(), jstTime.getDate());
+                    
+                    const deadline = new Date(today);
+                    deadline.setDate(deadline.getDate() + this.eventInfo.convenience_payment_deadline);
+                    return deadline;
+                },
+                // 最も近い参加日を取得
+                nearestParticipationDate() {
+                    if (!this.bookingData) return null;
+                    
+                    // まず bookingData.participation_date をチェック（単一参加日の場合）
+                    if (this.bookingData.participation_date) {
+                        console.log('単一参加日:', this.bookingData.participation_date);
+                        const date = new Date(this.bookingData.participation_date);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                    
+                    // items に participation_date がある場合（複数参加日の場合）
+                    if (!this.bookingData.items || this.bookingData.items.length === 0) return null;
+                    console.log('参加日計算 - items:', this.bookingData.items);
+                    const dates = this.bookingData.items
+                        .map(item => {
+                            console.log('参加日文字列:', item.participation_date, 'Type:', typeof item.participation_date);
+                            const date = new Date(item.participation_date);
+                            console.log('変換後Date:', date, 'Valid:', !isNaN(date.getTime()));
+                            return date;
+                        })
+                        .filter(date => !isNaN(date.getTime())) // 無効な日付を除外
+                        .sort((a, b) => a - b);
+                    console.log('ソート後の日付配列:', dates);
+                    return dates.length > 0 ? dates[0] : null;
+                },
+                // 銀行振込が選択可能か
+                canSelectBankTransfer() {
+                    if (!this.isPaymentMethodAvailable('bank_transfer')) return false;
+                    if (!this.bankTransferDeadline || !this.nearestParticipationDate) return true;
+                    // 振込期限 >= 参加日の場合は選択不可
+                    return this.bankTransferDeadline < this.nearestParticipationDate;
+                },
+                // コンビニ決済が選択可能か
+                canSelectConvenience() {
+                    if (!this.isPaymentMethodAvailable('convenience')) return false;
+                    if (!this.convenienceDeadline || !this.nearestParticipationDate) return true;
+                    // 振込期限 >= 参加日の場合は選択不可
+                    return this.convenienceDeadline < this.nearestParticipationDate;
+                }
+            },
+            methods: {
+                async loadBookingData() {
+                    const draft = localStorage.getItem('bookingDraft');
+                    if (!draft) {
+                        alert('予約情報がありません。最初からやり直してください。');
+                        window.location.href = '/product-detail';
+                        return;
+                    }
+                    
+                    this.bookingData = JSON.parse(draft);
+                    
+                    console.log('Loaded booking data:', this.bookingData);
+                    console.log('Items:', this.bookingData.items);
+                    
+                    // データ検証: unit_priceが存在しない場合は警告
+                    if (this.bookingData.items && this.bookingData.items.length > 0) {
+                        const firstItem = this.bookingData.items[0];
+                        console.log('First item:', firstItem);
+                        console.log('First item unit_price:', firstItem.unit_price, 'Type:', typeof firstItem.unit_price);
+                        
+                        if (firstItem.unit_price === undefined) {
+                            console.error('ERROR: unit_price is undefined. Data structure mismatch!');
+                            alert('予約データの形式が正しくありません。最初からやり直してください。');
+                            localStorage.removeItem('bookingDraft');
+                            window.location.href = '/product-detail';
+                            return;
+                        }
+                    }
+                    
+                    // イベント情報を取得して決済方法を確認
+                    await this.loadEventInfo();
+                    
+                    this.isLoading = false;
+                },
+                
+                async loadEventInfo() {
+                    try {
+                        const response = await axios.get(`/api/events/${this.bookingData.event_id}`);
+                        this.eventInfo = response.data.event || response.data;
+                        
+                        console.log('イベント情報:', this.eventInfo);
+                        console.log('payment_credit_card:', this.eventInfo.payment_credit_card);
+                        console.log('payment_convenience_store:', this.eventInfo.payment_convenience_store);
+                        console.log('payment_bank_transfer:', this.eventInfo.payment_bank_transfer);
+                        
+                        // 利用可能な決済方法を設定
+                        this.availablePaymentMethods = [];
+                        
+                        if (this.eventInfo.payment_credit_card === 1) {
+                            this.availablePaymentMethods.push('credit_card');
+                        }
+                        if (this.eventInfo.payment_convenience_store === 1) {
+                            this.availablePaymentMethods.push('convenience');
+                        }
+                        if (this.eventInfo.payment_bank_transfer === 1) {
+                            this.availablePaymentMethods.push('bank_transfer');
+                        }
+                        
+                        console.log('利用可能な決済方法:', this.availablePaymentMethods);
+                        
+                        // 期限情報のデバッグログ
+                        console.log('銀行振込期限日数:', this.eventInfo.bank_transfer_deadline);
+                        console.log('コンビニ決済期限日数:', this.eventInfo.convenience_payment_deadline);
+                        console.log('計算された銀行振込期限:', this.bankTransferDeadline);
+                        console.log('計算されたコンビニ決済期限:', this.convenienceDeadline);
+                        console.log('最も近い参加日:', this.nearestParticipationDate);
+                        console.log('銀行振込選択可能:', this.canSelectBankTransfer);
+                        console.log('コンビニ決済選択可能:', this.canSelectConvenience);
+                        
+                        if (this.availablePaymentMethods.length === 0) {
+                            this.errorMessage = 'このイベントでは決済方法が設定されていません。管理者にお問い合わせください。';
+                        }
+                    } catch (error) {
+                        console.error('Failed to load event info:', error);
+                        this.errorMessage = 'イベント情報の取得に失敗しました';
+                    }
+                },
+                
+                isPaymentMethodAvailable(method) {
+                    return this.availablePaymentMethods.includes(method);
+                },
+                
+                selectPaymentMethod(method) {
+                    // 期限チェック
+                    if (method === 'bank_transfer' && !this.canSelectBankTransfer) {
+                        return;
+                    }
+                    if (method === 'convenience' && !this.canSelectConvenience) {
+                        return;
+                    }
+                    
+                    if (this.isPaymentMethodAvailable(method)) {
+                        this.paymentMethod = method;
+                    }
+                },
+                
+                formatBankAccountType(type) {
+                    const types = {
+                        'normal': '普通',
+                        'current': '当座',
+                        'savings': '貯蓄'
+                    };
+                    return types[type] || type;
+                },
+                
+                async proceedToConfirm() {
+                    this.errorMessage = '';
+                    
+                    // 0円の場合は決済方法のチェックをスキップ
+                    if (this.finalTotalAmount > 0 && !this.paymentMethod) {
+                        this.errorMessage = '決済方法を選択してください';
+                        return;
+                    }
+                    
+                    // 0円の場合または銀行振込の場合は直接予約確定APIを呼び出し
+                    if (this.finalTotalAmount === 0 || this.paymentMethod === 'bank_transfer') {
+                        // 手数料をitemsに追加
+                        if (this.paymentFee > 0) {
+                            const feeItem = {
+                                type: 'fee',
+                                id: 0,
+                                name: `決済手数料（${this.paymentFeeName}）`,
+                                quantity: 1,
+                                unit_price: this.paymentFee,
+                                category: null,
+                                stock_id: null
+                            };
+                            
+                            // 既存のitemsに手数料が含まれていない場合のみ追加
+                            const hasFee = this.bookingData.items?.some(item => item.type === 'fee');
+                            if (!hasFee) {
+                                if (!this.bookingData.items) {
+                                    this.bookingData.items = [];
+                                }
+                                this.bookingData.items.push(feeItem);
+                                console.log('💰 決済手数料をitemsに追加:', feeItem);
+                            }
+                        }
+                        
+                        this.bookingData.payment_method = this.finalTotalAmount === 0 ? 'free' : this.paymentMethod;
+                        this.bookingData.final_amount = this.finalTotalAmount;
+                        this.bookingData.payment_fee = this.paymentFee;
+                        
+                        try {
+                            const response = await axios.post('/api/v2/bookings', this.bookingData);
+                            
+                            if (response.data.success) {
+                                const eventUrl = this.bookingData.event_url || '';
+                                const bookingNumber = response.data.booking_number;
+                                
+                                // 予約完了メールを送信（非同期、エラーは無視）
+                                axios.post('/api/emails/send-notification', {
+                                    booking_number: bookingNumber,
+                                    notification_type: 'booking_confirmed'
+                                }).catch(error => {
+                                    console.error('予約完了メール送信エラー:', error);
+                                    // メール送信失敗しても予約完了画面へ遷移
+                                });
+                                
+                                localStorage.removeItem('bookingDraft');
+                                window.location.href = `/booking-complete?booking_number=${bookingNumber}&booking_id=${response.data.booking_id}&event_url=${eventUrl}`;
+                            } else {
+                                this.errorMessage = response.data.message || '予約の作成に失敗しました';
+                            }
+                        } catch (error) {
+                            console.error('Booking creation failed:', error);
+                            this.errorMessage = error.response?.data?.error || '予約の作成中にエラーが発生しました';
+                        }
+                        return;
+                    }
+                    
+                    // クレジットカード・コンビニ決済の場合はGMO決済画面へ遷移
+                    if (this.paymentMethod === 'credit_card' || this.paymentMethod === 'convenience') {
+                        try {
+                            // 手数料をitemsに追加
+                            if (this.paymentFee > 0) {
+                                const feeItem = {
+                                    type: 'fee',
+                                    id: 0,
+                                    name: `決済手数料（${this.paymentFeeName}）`,
+                                    quantity: 1,
+                                    unit_price: this.paymentFee,
+                                    category: null,
+                                    stock_id: null
+                                };
+                                
+                                // 既存のitemsに手数料が含まれていない場合のみ追加
+                                const hasFee = this.bookingData.items?.some(item => item.type === 'fee');
+                                if (!hasFee) {
+                                    if (!this.bookingData.items) {
+                                        this.bookingData.items = [];
+                                    }
+                                    this.bookingData.items.push(feeItem);
+                                    console.log('💰 決済手数料をitemsに追加:', feeItem);
+                                }
+                            }
+                            
+                            // 予約データをLocalStorageに保存（決済完了後に予約作成するため）
+                            this.bookingData.payment_method = this.paymentMethod
+                            // 手数料込みの金額を設定
+                            this.bookingData.final_amount = this.finalTotalAmount
+                            this.bookingData.payment_fee = this.paymentFee
+                            localStorage.setItem('bookingDraft', JSON.stringify(this.bookingData))
+                            console.log('💾 予約データをLocalStorageに保存:', this.bookingData)
+                            
+                            // 一時的な仮注文IDを生成（GMO用）
+                            const tempOrderId = `TEMP-${Date.now()}-${Math.random().toString(36).substring(7)}`
+                            console.log('🔖 一時注文ID生成:', tempOrderId)
+                            
+                            // GMO決済URL取得APIを呼び出し
+                            const paymentMethod = this.paymentMethod === 'credit_card' ? 'credit' : 'cvs'
+                            
+                            // コンビニ決済の場合は予約者情報も送信
+                            const gmoRequestData = {
+                                booking_number: tempOrderId,  // 一時IDを使用
+                                payment_method: paymentMethod,
+                                amount: this.finalTotalAmount || 0,  // 決済手数料込みの金額
+                                tax: 0
+                            }
+                            
+                            // コンビニ決済の場合、顧客情報を追加
+                            if (paymentMethod === 'cvs' && this.bookingData.booker) {
+                                gmoRequestData.customer_info = {
+                                    email: this.bookingData.booker.email || '',
+                                    family_name: this.bookingData.booker.family_name || '',
+                                    first_name: this.bookingData.booker.first_name || '',
+                                    family_kana: this.bookingData.booker.family_kana || '',
+                                    first_kana: this.bookingData.booker.first_kana || '',
+                                    tel: this.bookingData.booker.tel || '',
+                                    mobile: this.bookingData.booker.mobile || ''
+                                }
+                                console.log('📧 コンビニ決済用の顧客情報:', gmoRequestData.customer_info)
+                            }
+                            
+                            const gmoResponse = await axios.post('/api/v2/gmo/get-payment-url', gmoRequestData)
+                            
+                            if (gmoResponse.data.success) {
+                                console.log('✅ GMO決済URL取得成功:', gmoResponse.data.link_url)
+                                
+                                // LocalStorageに一時注文IDも保存
+                                localStorage.setItem('tempOrderId', tempOrderId)
+                                
+                                // GMO決済画面へリダイレクト
+                                window.location.href = gmoResponse.data.link_url
+                            } else {
+                                this.errorMessage = gmoResponse.data.error || 'GMO決済URLの取得に失敗しました'
+                            }
+                        } catch (error) {
+                            console.error('❌ GMO決済URL取得エラー:', error)
+                            console.error('❌ エラー詳細:', error.response?.data)
+                            console.error('❌ エラーステータス:', error.response?.status)
+                            
+                            // エラーメッセージを詳細に表示
+                            let errorMsg = 'GMO決済への遷移に失敗しました'
+                            if (error.response?.data) {
+                                const data = error.response.data
+                                errorMsg = data.error || errorMsg
+                                if (data.details) {
+                                    errorMsg += '\n詳細: ' + JSON.stringify(data.details, null, 2)
+                                }
+                            }
+                            this.errorMessage = errorMsg
+                        }
+                        return
+                    }
+                },
+                
+                goBack() {
+                    window.location.href = '/participant-info';
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    
+                    // Date オブジェクトの場合はそのまま使用
+                    let date;
+                    if (dateString instanceof Date) {
+                        date = dateString;
+                    } else {
+                        date = new Date(dateString);
+                    }
+                    
+                    // 無効な日付チェック
+                    if (isNaN(date.getTime())) {
+                        console.error('Invalid date:', dateString);
+                        return '';
+                    }
+                    
+                    const year = date.getFullYear();
+                    const month = date.getMonth() + 1;
+                    const day = date.getDate();
+                    return `${year}年${month}月${day}日`;
+                }
+            },
+            mounted() {
+                this.loadBookingData();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

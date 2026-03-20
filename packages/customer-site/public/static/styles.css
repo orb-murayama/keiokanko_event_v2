@@ -1,0 +1,31 @@
+/* トースト通知のアニメーション */
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+}
+
+/* 新しく追加されたフィールドのハイライトアニメーション */
+@keyframes highlight-pulse {
+    0%, 100% {
+        background-color: rgba(59, 130, 246, 0.1);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+        background-color: rgba(59, 130, 246, 0.2);
+        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+    }
+}
+
+.highlight-new-field {
+    animation: highlight-pulse 1s ease-out 2;
+}

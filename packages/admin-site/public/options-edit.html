@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オプション登録 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/variables.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/components.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/admin.css?v=20260217-004">
+  <link rel="stylesheet" href="/static/css/utilities.css?v=20260217-004">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <div class="card-header">
+        <h2 class="card-title" id="formTitle">オプション登録</h2>
+      </div>
+
+      <!-- 読み込み中 -->
+      <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>読み込み中...</p>
+      </div>
+
+      <form id="optionForm" style="display: block;">
+        <input type="hidden" id="optionId" value="">
+        <input type="hidden" id="mode" value="">
+        <input type="hidden" id="image_url" value="">
+
+        <!-- 基本情報 -->
+        <div class="form-section">
+          <h3 class="form-section-title">基本情報</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name" class="form-label">オプション名<span class="required">*</span></label>
+              <input type="text" id="name" name="name" class="form-control" required placeholder="例：駐車場">
+            </div>
+
+            <div class="form-group">
+              <label for="event_id" class="form-label">イベント<span class="required">*</span></label>
+              <select id="event_id" name="event_id" class="form-control" required>
+                <option value="">選択してください</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="option_category_id" class="form-label required">カテゴリー</label>
+              <select id="option_category_id" name="option_category_id" class="form-control" required>
+                <option value="">選択してください</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="enable_flg" class="form-label">公開状態</label>
+              <select id="enable_flg" name="enable_flg" class="form-control">
+                <option value="1" selected>有効</option>
+                <option value="0">無効</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- オプション画像 -->
+        <div class="form-section">
+          <h3 class="form-section-title">オプション画像</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="imageFile" class="form-label">画像ファイル</label>
+              <input type="file" id="imageFile" name="image" accept="image/*" class="form-control">
+              <p class="helper-text">
+                <i class="fas fa-info-circle"></i>
+                対応形式：JPG, PNG, GIF, WebP / 最大サイズ：5MB
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">プレビュー</label>
+              <div class="image-preview-container">
+                <img id="imagePreview" src="" alt="プレビュー" class="image-preview" style="display: none;">
+                <p id="noImageText" class="no-image-text">
+                  <i class="fas fa-image"></i>
+                  画像未選択
+                </p>
+              </div>
+              <button type="button" id="clearImageBtn" class="btn btn-sm btn-danger mt-2" style="display: none;">
+                <i class="fas fa-times"></i>
+                画像をクリア
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 詳細情報 -->
+        <div class="form-section">
+          <h3 class="form-section-title">詳細情報</h3>
+
+          <div class="form-group">
+            <label for="description" class="form-label">オプション説明</label>
+            <textarea id="description" name="description" class="form-control" rows="4" placeholder="オプションの詳細説明"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="remarks" class="form-label">備考</label>
+            <textarea id="remarks" name="remarks" class="form-control" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="cancel_policy" class="form-label">キャンセルポリシー</label>
+            <textarea id="cancel_policy" name="cancel_policy" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="note" class="form-label">注意事項</label>
+            <textarea id="note" name="note" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- フォームアクション -->
+        <div class="form-actions">
+          <button type="submit" id="submitBtn" class="btn btn-primary">
+            <i class="fas fa-save"></i> <span id="submitBtnText">保存</span>
+          </button>
+          <a href="/options-list.html" class="btn btn-secondary">
+            <i class="fas fa-times"></i> キャンセル
+          </a>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <p>&copy; 2025 イベント予約管理システム</p>
+  </footer>
+
+  <!-- ローディングオーバーレイ -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js?v=20260128"></script>
+  <script src="/static/js/modules/utils.js?v=20260128"></script>
+  <script src="/static/js/pages/admin.js?v=20260128"></script>
+  <script src="/static/js/pages/admin-options-edit.js?v=20260128"></script>
+</body>
+</html>

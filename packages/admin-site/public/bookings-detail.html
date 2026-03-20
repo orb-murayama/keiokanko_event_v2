@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>予約詳細 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <!-- 戻るボタン -->
+    <div class="mb-3">
+      <a href="/admin/bookings" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 一覧に戻る
+      </a>
+    </div>
+
+    <!-- 読み込み中 -->
+    <div id="loading" class="hidden">読み込み中...</div>
+
+    <!-- 予約詳細 -->
+    <div id="bookingDetail" class="hidden">
+      <!-- 基本情報とイベント情報（2カラム） -->
+      <div class="detail-row">
+        <!-- 基本情報 -->
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title">予約基本情報</h2>
+            <div style="display: flex; gap: 0.5rem;">
+              <button id="cancelBookingBtn" class="btn btn-danger hidden">
+                <i class="fas fa-times"></i> 予約キャンセル
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label class="detail-label">予約番号</label>
+                <div class="detail-value" id="bookingNumber">-</div>
+              </div>
+              <div class="detail-item">
+                <label class="detail-label">予約ステータス</label>
+                <div class="detail-value">
+                  <span id="bookingStatus" class="badge">-</span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <label class="detail-label">支払いステータス</label>
+                <div class="detail-value">
+                  <span id="paymentStatus" class="badge">-</span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <label class="detail-label">予約日時</label>
+                <div class="detail-value" id="createdAt">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- イベント情報 -->
+        <div class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">イベント情報</h2>
+        </div>
+        <div class="card-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label class="detail-label">イベント名</label>
+              <div class="detail-value" id="eventName">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">イベント期間</label>
+              <div class="detail-value" id="eventPeriod">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">クライアント</label>
+              <div class="detail-value" id="clientName">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">主催者</label>
+              <div class="detail-value" id="organizerName">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">担当支店</label>
+              <div class="detail-value" id="branchName">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- 顧客情報と料金情報（2カラム） -->
+      <div class="detail-row">
+        <!-- 顧客情報 -->
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title">顧客情報</h2>
+          </div>
+          <div class="card-body">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label class="detail-label">顧客名</label>
+                <div class="detail-value" id="customerName">-</div>
+              </div>
+              <div class="detail-item">
+                <label class="detail-label">メールアドレス</label>
+                <div class="detail-value" id="customerEmail">-</div>
+              </div>
+              <div class="detail-item">
+                <label class="detail-label">電話番号</label>
+                <div class="detail-value" id="customerPhone">-</div>
+              </div>
+              <div class="detail-item">
+                <label class="detail-label">住所</label>
+                <div class="detail-value" id="customerAddress">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 料金情報 -->
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title">料金情報</h2>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="text-align: left;">項目</th>
+                  <th style="text-align: right; width: 150px;">金額</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>取引金額</td>
+                  <td style="text-align: right;" id="transactionAmount">-</td>
+                </tr>
+                <tr>
+                  <td>決済済み</td>
+                  <td style="text-align: right; color: #16a34a;" id="paidAmount">-</td>
+                </tr>
+                <tr>
+                  <td>決済待ち</td>
+                  <td style="text-align: right; color: #ea580c;" id="pendingAmount">-</td>
+                </tr>
+                <tr>
+                  <td>返金待ち</td>
+                  <td style="text-align: right; color: #dc2626;" id="refundPendingAmount">-</td>
+                </tr>
+                <tr>
+                  <td>未請求金額</td>
+                  <td style="text-align: right; color: #9333ea;">
+                    <span id="unbilledAmount">-</span>
+                    <button id="requestPaymentBtn" class="btn btn-sm btn-primary" style="display: none; margin-left: 10px;">
+                      <i class="fas fa-credit-card"></i> 追加決済を依頼
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>返金済み</td>
+                  <td style="text-align: right; color: #dc2626;" id="refundedAmount">-</td>
+                </tr>
+                <tr style="border-top: 2px solid #1e40af;">
+                  <td style="font-weight: bold; font-size: 1.1rem; padding-top: 1rem;">合計金額</td>
+                  <td style="text-align: right; font-weight: bold; font-size: 1.1rem; color: #1e40af; padding-top: 1rem;" id="totalAmount">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- キャンセル情報 -->
+      <div id="cancelInfo" class="admin-card" style="display: none;">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-ban" style="color: #dc2626;"></i>
+            キャンセル情報
+          </h2>
+        </div>
+        <div class="card-body">
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="text-align: center;">キャンセル日時</th>
+                  <th style="text-align: center;">キャンセル理由</th>
+                  <th id="cancelParticipationDateHeader" style="display: none; text-align: center;">参加日（最寄り）</th>
+                  <th id="cancelDaysUntilHeader" style="display: none; text-align: center;">日数</th>
+                  <th id="cancelRateHeader" style="display: none; text-align: center;">キャンセル料率</th>
+                  <th id="cancellationFeeHeader" style="display: none; text-align: center; background-color: #fef2f2;">キャンセル料</th>
+                  <th id="cancellationFeeStatusHeader" style="display: none; text-align: center;">支払い状況</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="text-align: center;" id="canceledAt">-</td>
+                  <td style="text-align: center;" id="cancelReason">-</td>
+                  <td id="cancelParticipationDate" style="display: none; text-align: center;">-</td>
+                  <td id="cancelDaysUntil" style="display: none; text-align: center;">-</td>
+                  <td id="cancelRate" style="display: none; text-align: center; color: #dc2626; font-weight: 600;">-</td>
+                  <td id="cancellationFee" style="display: none; text-align: center; color: #dc2626; font-weight: 700; font-size: 18px; background-color: #fef2f2;">-</td>
+                  <td id="cancellationFeeStatus" style="display: none; text-align: center;">
+                    <span id="cancellationFeePaidBadge" class="badge">-</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 支払い済みボタン -->
+          <div id="markAsPaidSection" style="margin-top: 16px; display: none;">
+            <button id="markFeePaidBtn" class="btn btn-success" style="background-color: #059669;">
+              <i class="fas fa-check-circle"></i> キャンセル料を「支払い済み」にする
+            </button>
+            <p style="font-size: 12px; color: #666; margin-top: 8px;">
+              <i class="fas fa-info-circle"></i> キャンセル料を顧客から回収した後、このボタンをクリックしてください
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 予約明細 -->
+      <div class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">予約明細</h2>
+          <div style="display: flex; gap: 10px;">
+            <button id="editBookingBtn" class="btn btn-primary">
+              <i class="fas fa-edit"></i> 予約変更
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="itemsContainer">
+            <!-- 予約明細はJavaScriptで動的に挿入 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 決済履歴 -->
+      <div class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">決済履歴</h2>
+        </div>
+        <div class="card-body">
+          <div id="paymentsContainer">
+            <!-- 決済履歴はJavaScriptで動的に挿入 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 返金履歴 -->
+      <div id="refundsCard" class="admin-card hidden">
+        <div class="card-header">
+          <h2 class="card-title">返金履歴</h2>
+        </div>
+        <div class="card-body">
+          <div id="refundsContainer">
+            <!-- 返金履歴はJavaScriptで動的に挿入 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- お客様メッセージ -->
+      <div id="messagesCard" class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">お客様メッセージ</h2>
+          <button id="addMessageBtn" class="btn btn-primary">
+            <i class="fas fa-plus"></i> メッセージ追加
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="messagesContainer">
+            <!-- メッセージ一覧はJavaScriptで動的に挿入 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 添付ファイル -->
+      <div class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">添付ファイル</h2>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="generateDocumentBtnFiles" class="btn btn-secondary">
+              <i class="fas fa-file-pdf"></i> 帳票生成
+            </button>
+            <button id="addFileBtn" class="btn btn-primary">
+              <i class="fas fa-plus"></i> ファイル追加
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="filesContainer">
+            <!-- ファイル一覧はJavaScriptで動的に挿入 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- メール送信 -->
+      <div id="emailsCard" class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">メール送信</h2>
+        </div>
+        <div class="card-body">
+          <div id="emailsContainer">
+            <!-- メール一覧はJavaScriptで動的に挿入 -->
+            <p style="text-align: center; color: #666; padding: 20px;">
+              <i class="fas fa-envelope" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
+              メール送信履歴を読み込み中...
+            </p>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- メモ -->
+      <div class="admin-card">
+        <div class="card-header">
+          <h2 class="card-title">メモ</h2>
+          <button id="saveNotesBtn" class="btn btn-primary">
+            <i class="fas fa-save"></i> 保存
+          </button>
+        </div>
+        <div class="card-body">
+          <textarea 
+            id="bookingNotes" 
+            class="form-control" 
+            rows="6" 
+            placeholder="この予約に関するメモを入力してください（管理者のみ表示）"
+            style="width: 100%; resize: vertical;">
+          </textarea>
+          <p style="font-size: 12px; color: #666; margin-top: 8px;">
+            <i class="fas fa-info-circle"></i> このメモは管理者のみ閲覧可能です
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2024 イベント予約管理システム. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- PDFアップロードモーダル -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>PDFファイルアップロード</h3>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="uploadForm" enctype="multipart/form-data">
+          <!-- ファイル選択エリア -->
+          <div class="form-group">
+            <label class="form-label">PDFファイル *</label>
+            <div id="dropZone" class="drop-zone">
+              <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #ccc;"></i>
+              <p>ファイルをドラッグ&ドロップ</p>
+              <p>または</p>
+              <button type="button" id="selectFileBtn" class="btn btn-secondary">ファイルを選択</button>
+              <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;">
+            </div>
+            <div id="fileInfo" class="file-info" style="display: none;">
+              <i class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+              <span id="fileName"></span>
+              <span id="fileSize"></span>
+              <button type="button" id="removeFileBtn" class="btn-icon">&times;</button>
+            </div>
+          </div>
+
+          <!-- 表示ファイル名 -->
+          <div class="form-group">
+            <label for="displayFilename" class="form-label">表示ファイル名 *</label>
+            <input type="text" id="displayFilename" class="form-control" placeholder="例: 参加証明書.pdf" required>
+            <small class="form-text">顧客のマイページに表示されるファイル名です</small>
+          </div>
+
+          <!-- ダウンロード回数制限 -->
+          <div class="form-group">
+            <label for="downloadLimit" class="form-label">ダウンロード回数制限</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="number" id="downloadLimit" class="form-control" style="width: 100px;" min="0" value="0">
+              <span>回</span>
+              <label style="margin: 0;">
+                <input type="checkbox" id="unlimitedCheck"> 無制限
+              </label>
+            </div>
+            <small class="form-text">0で無制限、1以上で回数制限あり</small>
+          </div>
+
+          <!-- エラーメッセージ -->
+          <div id="uploadError" class="alert alert-danger" style="display: none;"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelUploadBtn">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="uploadBtn">アップロード</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDFプレビューモーダル -->
+  <div id="previewModal" class="modal">
+    <div class="modal-content" style="width: 90%; max-width: 1200px; height: 90vh;">
+      <div class="modal-header">
+        <h3 id="previewTitle">PDFプレビュー</h3>
+        <button class="modal-close" id="closePreviewModal">&times;</button>
+      </div>
+      <div class="modal-body" style="height: calc(90vh - 120px); overflow: auto;">
+        <iframe id="pdfPreview" style="width: 100%; height: 100%; border: none;"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ファイル編集モーダル -->
+  <div id="editFileModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>ファイル編集</h3>
+        <button class="modal-close" id="closeEditModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="editFileForm">
+          <input type="hidden" id="editFileId">
+          
+          <!-- 表示ファイル名 -->
+          <div class="form-group">
+            <label for="editDisplayFilename" class="form-label">表示ファイル名 *</label>
+            <input type="text" id="editDisplayFilename" class="form-control" required>
+          </div>
+
+          <!-- ダウンロード回数制限 -->
+          <div class="form-group">
+            <label for="editDownloadLimit" class="form-label">ダウンロード回数制限</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="number" id="editDownloadLimit" class="form-control" style="width: 100px;" min="0" value="0">
+              <span>回</span>
+              <label style="margin: 0;">
+                <input type="checkbox" id="editUnlimitedCheck"> 無制限
+              </label>
+            </div>
+          </div>
+
+          <!-- エラーメッセージ -->
+          <div id="editError" class="alert alert-danger" style="display: none;"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelEditBtn">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="saveEditBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帳票生成モーダル -->
+  <div id="generateDocumentModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-file-pdf"></i> 帳票生成</h3>
+        <button class="modal-close" id="closeGenerateDocumentModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 予約情報 -->
+        <div class="info-section" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #666;">📋 予約情報</h4>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 14px;">
+            <span style="color: #666;">予約番号:</span>
+            <span id="docModalBookingNumber" style="font-weight: bold;">-</span>
+            <span style="color: #666;">予約者:</span>
+            <span id="docModalBookerName">-</span>
+            <span style="color: #666;">イベント:</span>
+            <span id="docModalEventName">-</span>
+          </div>
+        </div>
+
+        <!-- テンプレートファイル -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: bold;">📄 Excelテンプレート <span style="color: #dc3545;">*必須</span></label>
+          <input type="file" id="templateFileInput" class="form-control" accept=".xlsx,.xls" style="font-size: 14px;">
+          <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">
+            ※ Excel形式（.xlsx, .xls）のテンプレートをアップロードしてください
+          </p>
+        </div>
+
+        <!-- 進捗表示（生成中のみ表示） -->
+        <div id="documentProgress" style="display: none; margin-top: 20px;">
+          <div style="background: #e7f3ff; border-left: 4px solid #0d6efd; padding: 15px; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0d6efd;">
+              <i class="fas fa-spinner fa-spin"></i> 生成中...
+            </h4>
+            <div style="font-size: 13px; color: #495057; line-height: 1.8;">
+              <div>📝 データ取得中...</div>
+              <div>📄 Excel埋め込み中...</div>
+              <div>📝 PDF変換中...</div>
+              <div>☁️ アップロード中...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 完了表示（生成完了時のみ表示） -->
+        <div id="documentSuccess" style="display: none; margin-top: 20px;">
+          <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #28a745;">
+              <i class="fas fa-check-circle"></i> 生成完了
+            </h4>
+            <div style="font-size: 13px; color: #155724; line-height: 1.8;">
+              帳票ファイルが生成されました。添付ファイル一覧に追加されています。
+            </div>
+          </div>
+        </div>
+
+        <!-- エラー表示（エラー発生時のみ表示） -->
+        <div id="documentError" style="display: none; margin-top: 20px;">
+          <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #dc3545;">
+              <i class="fas fa-exclamation-triangle"></i> エラー
+            </h4>
+            <div id="documentErrorMessage" style="font-size: 13px; color: #721c24; line-height: 1.8;">
+            </div>
+          </div>
+        </div>
+
+        <!-- 注意事項 -->
+        <div style="background: #e7f3ff; border-left: 4px solid #0d6efd; padding: 15px; border-radius: 4px; margin-top: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0d6efd;">💡 使い方</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #495057; line-height: 1.8;">
+            <li>テンプレートにプレースホルダー（{{booking_number}}など）を配置してください</li>
+            <li>明細行は{{items.item_name}}などで自動的に複製されます</li>
+            <li>生成されたPDFは添付ファイル一覧に自動追加されます</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelGenerateDocumentBtn">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="confirmGenerateDocumentBtn" disabled>
+          <i class="fas fa-play"></i> 生成開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 追加決済依頼モーダル -->
+  <div id="requestPaymentModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-credit-card"></i> 追加決済の依頼</h3>
+        <button class="modal-close" id="closeRequestPaymentModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 予約情報 -->
+        <div class="info-section" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #666;">📋 予約情報</h4>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 14px;">
+            <span style="color: #666;">予約番号:</span>
+            <span id="modalBookingNumber" style="font-weight: bold;">-</span>
+            <span style="color: #666;">予約者:</span>
+            <span id="modalBookerName">-</span>
+            <span style="color: #666;">イベント:</span>
+            <span id="modalEventName">-</span>
+          </div>
+        </div>
+
+        <!-- 請求金額 -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: bold;">💰 請求金額</label>
+          <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 10px;">
+            <span style="font-size: 32px; font-weight: bold; color: #856404;" id="modalAmount">¥0</span>
+          </div>
+          <p style="font-size: 12px; color: #666; margin: 0;">※ 未請求金額が自動で入力されています</p>
+        </div>
+
+        <!-- 決済方法 -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: bold;">💳 決済方法 <span style="color: #dc3545;">*必須</span></label>
+          
+          <!-- クレジットカード -->
+          <div style="border: 2px solid #e9ecef; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer;" id="paymentMethodCard">
+            <label style="display: flex; align-items: start; cursor: pointer; margin: 0;">
+              <input type="radio" name="paymentMethod" value="credit_card" style="margin-top: 4px; margin-right: 10px;">
+              <div style="flex: 1;">
+                <div style="font-weight: bold; margin-bottom: 5px;">クレジットカード決済（推奨）</div>
+                <div style="font-size: 12px; color: #666; line-height: 1.5;">
+                  お客様がメール内のリンクからカード情報を入力して決済します<br>
+                  <span style="color: #28a745; font-weight: bold;">支払期限: 即時</span>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- コンビニ決済 -->
+          <div style="border: 2px solid #e9ecef; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer;" id="paymentMethodConvenience">
+            <label style="display: flex; align-items: start; cursor: pointer; margin: 0;">
+              <input type="radio" name="paymentMethod" value="convenience_store" style="margin-top: 4px; margin-right: 10px;">
+              <div style="flex: 1;">
+                <div style="font-weight: bold; margin-bottom: 5px;">コンビニ決済</div>
+                <div style="font-size: 12px; color: #666; line-height: 1.5;">
+                  支払期限: <span id="convenienceDueDate" style="font-weight: bold;">-</span>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- 銀行振込 -->
+          <div style="border: 2px solid #e9ecef; border-radius: 8px; padding: 15px; cursor: pointer;" id="paymentMethodBank">
+            <label style="display: flex; align-items: start; cursor: pointer; margin: 0;">
+              <input type="radio" name="paymentMethod" value="bank_transfer" style="margin-top: 4px; margin-right: 10px;">
+              <div style="flex: 1;">
+                <div style="font-weight: bold; margin-bottom: 5px;">銀行振込</div>
+                <div style="font-size: 12px; color: #666; line-height: 1.5;">
+                  支払期限: <span id="bankDueDate" style="font-weight: bold;">-</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 管理メモ -->
+        <div class="form-group">
+          <label class="form-label">📝 管理メモ（任意）</label>
+          <textarea id="paymentRemarks" class="form-control" rows="3" placeholder="例: 商品追加に伴う追加決済&#10;（お客様には表示されません）"></textarea>
+          <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">※ 内部管理用のメモです。お客様には表示されません。</p>
+        </div>
+
+        <!-- 注意事項 -->
+        <div style="background: #e7f3ff; border-left: 4px solid #0d6efd; padding: 15px; border-radius: 4px; margin-top: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0d6efd;">⚠️ 注意事項</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #495057; line-height: 1.8;">
+            <li>決済依頼メールが自動送信されます（将来実装予定）</li>
+            <li>お客様は受信したメールから決済できます</li>
+            <li>期限を過ぎると自動的に期限切れになります</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelRequestPaymentBtn">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="confirmRequestPaymentBtn">
+          <i class="fas fa-check"></i> 決済依頼を作成
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- メッセージ登録モーダル -->
+  <div id="messageModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-envelope"></i> <span id="messageModalTitle">メッセージ登録</span></h3>
+        <button class="modal-close" id="closeMessageModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 予約情報 -->
+        <div class="info-section" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #666;">📋 予約情報</h4>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 14px;">
+            <span style="color: #666;">予約番号:</span>
+            <span id="messageModalBookingNumber" style="font-weight: bold;">-</span>
+            <span style="color: #666;">予約者:</span>
+            <span id="messageModalBookerName">-</span>
+            <span style="color: #666;">送信先:</span>
+            <span id="messageModalEmail">-</span>
+          </div>
+        </div>
+
+        <!-- タイトル -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: bold;">📧 タイトル <span style="color: #dc3545;">*必須</span></label>
+          <input type="text" id="messageTitle" class="form-control" placeholder="例: イベント変更のお知らせ" maxlength="100">
+          <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">※ メールの件名として使用されます（最大100文字）</p>
+        </div>
+
+        <!-- メッセージ -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: bold;">💬 メッセージ <span style="color: #dc3545;">*必須</span></label>
+          <textarea id="messageContent" class="form-control" rows="8" placeholder="例: 開催日が変更になりました。&#10;&#10;新しい開催日: 2026/03/15&#10;変更理由: 会場都合により&#10;&#10;ご不明な点がございましたら、お気軽にお問い合わせください。"></textarea>
+          <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">※ お客様のマイページに表示されるメッセージ本文です</p>
+        </div>
+
+        <!-- 表示日時 -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: bold;">📅 表示日時 <span style="color: #dc3545;">*必須</span></label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="date" id="messageScheduledDate" class="form-control" style="flex: 1;">
+            <input type="time" id="messageScheduledTime" class="form-control" style="width: 120px;" value="10:00">
+          </div>
+          <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">※ 指定した日時以降にマイページに表示されます</p>
+        </div>
+
+        <!-- 注意事項 -->
+        <div style="background: #e7f3ff; border-left: 4px solid #0d6efd; padding: 15px; border-radius: 4px; margin-top: 20px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0d6efd;">💡 使い方</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #495057; line-height: 1.8;">
+            <li>メッセージは指定した表示日時以降にお客様のマイページに表示されます</li>
+            <li>登録後の編集・削除も可能です</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelMessageBtn">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="confirmMessageBtn">
+          <i class="fas fa-check"></i> <span id="confirmMessageBtnText">メッセージを登録</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/js/pages/admin-bookings-detail.js?v=20260304-003"></script>
+  <script src="/static/js/pages/booking-files.js"></script>
+</body>
+</html>
