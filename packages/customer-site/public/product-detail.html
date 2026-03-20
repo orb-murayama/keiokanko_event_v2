@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品詳細 | イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 300px;
+            background: url('https://placehold.co/1920x600/1a1a1a/ffffff?text=Event+Booking') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .hero-content {
+            z-index: 2;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Event Info */
+        .event-info {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .event-title-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .event-main-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #fee2e2, #dbeafe);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #dc2626;
+        }
+
+        .event-meta-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #4b5563;
+        }
+
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-item i {
+            color: #2563eb;
+            margin-top: 2px;
+            font-size: 0.9rem;
+        }
+
+        .meta-item strong {
+            font-weight: 600;
+            color: #374151;
+            margin-right: 4px;
+        }
+
+        /* Purchase Form */
+        .purchase-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .form-section h3 {
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h3 i {
+            color: #dc2626;
+        }
+
+        .required {
+            color: #dc2626;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        /* Date Selection - Button Mode */
+        .date-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .date-button {
+            padding: 15px 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .date-button:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .date-button.selected {
+            border-color: #dc2626;
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .date-button .date-display {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .date-button .date-weekday {
+            display: block;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        /* Date Selection - Calendar Mode */
+        .calendar-container {
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .calendar-nav button {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .calendar-nav button:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .calendar-nav button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .calendar-month {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .calendar-day {
+            padding: 8px 10px;
+            min-height: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .calendar-day:hover:not(.disabled):not(.empty) {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .calendar-day.selected {
+            border-color: #dc2626;
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .calendar-day.disabled {
+            background: #f9fafb;
+            color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.empty {
+            border: none;
+            background: transparent;
+            cursor: default;
+        }
+
+        .calendar-day.other-month {
+            color: #d1d5db;
+        }
+
+        .date-button.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .date-day {
+            font-size: 1.2rem;
+            display: block;
+        }
+
+        .date-weekday {
+            font-size: 0.8rem;
+            color: #6b7280;
+            display: block;
+        }
+
+        /* Product Selection */
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .product-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f9fafb;
+            transition: all 0.3s;
+        }
+
+        .product-item:hover {
+            border-color: #2563eb;
+            background: white;
+        }
+
+        .product-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .product-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .product-main-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .charge-description {
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #92400e;
+            white-space: pre-line;
+        }
+
+        .product-details-toggle {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            min-height: 44px;
+            min-width: 180px;
+        }
+
+        .product-details-toggle:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .product-details-toggle:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        .product-details-toggle i {
+            transition: transform 0.2s;
+            font-size: 1rem;
+        }
+
+        .product-details-toggle.active {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            box-shadow: 0 2px 8px rgba(75, 85, 99, 0.3);
+        }
+
+        .product-details-toggle.active:hover {
+            background: linear-gradient(135deg, #4b5563, #374151);
+            box-shadow: 0 4px 12px rgba(75, 85, 99, 0.4);
+        }
+
+        .product-details-toggle.active i {
+            transform: rotate(180deg);
+        }
+
+        .price-band-tag {
+            padding: 4px 12px;
+            background: #dbeafe;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .price-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .price-item .name {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .price-item .price {
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        /* Price Category List */
+        .price-category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .price-category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .price-category-item:hover {
+            border-color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        .category-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .category-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .category-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .product-footer .stock-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .product-footer .stock-info i {
+            color: #2563eb;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .quantity-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #2563eb;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .quantity-input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .stock-info {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-left: 10px;
+        }
+
+        .subtotal {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-left: auto;
+        }
+
+        /* Summary */
+        .summary-box {
+            background: linear-gradient(135deg, #fee2e2, #fef3c7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-total {
+            padding-top: 15px;
+            border-top: 2px solid rgba(0,0,0,0.1);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .summary-label {
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-weight: 700;
+        }
+
+        /* Optional Tag */
+        .optional-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        /* Option Styles */
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-item {
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fef3c7;
+            transition: all 0.3s;
+        }
+
+        .option-item:hover {
+            border-color: #f59e0b;
+            background: #fef9c3;
+        }
+
+        .option-header {
+            margin-bottom: 15px;
+        }
+
+        .option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .option-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .option-description {
+            font-size: 0.9rem;
+            color: #78350f;
+        }
+
+        /* Submit Button */
+        .submit-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .submit-button:hover {
+            background: linear-gradient(135deg, #991b1b, #7f1d1d);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+        }
+
+        .submit-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        /* Error */
+        .error-message {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+            border-radius: 10px;
+            padding: 15px;
+            color: #dc2626;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hamburger Menu */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .hamburger-button {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-button:hover {
+            background: white;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .hamburger-line {
+            width: 24px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-button.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger-button.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-button.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            z-index: 999;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .menu-panel.active {
+            right: 0;
+        }
+
+        .menu-header {
+            padding: 24px;
+            border-bottom: 2px solid #f3f4f6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .menu-header h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .menu-list {
+            padding: 16px 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: #f9fafb;
+            border-left-color: #667eea;
+        }
+
+        .menu-item i {
+            font-size: 1.2rem;
+            color: #667eea;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-item span {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 12px 24px;
+        }
+
+        .menu-footer {
+            padding: 24px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .menu-footer-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 0;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .menu-footer-link:hover {
+            color: #667eea;
+        }
+
+        .menu-footer-link i {
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .container {
+                padding: 0 15px 40px;
+            }
+
+            .event-info,
+            .purchase-form {
+                padding: 20px;
+            }
+
+            .date-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 8px;
+            }
+
+            .price-table {
+                grid-template-columns: 1fr;
+            }
+
+            .quantity-selector {
+                flex-wrap: wrap;
+            }
+
+            .product-details-toggle {
+                width: 100%;
+                min-width: unset;
+                padding: 14px 20px;
+                font-size: 1rem;
+                min-height: 48px;
+            }
+
+            .product-header {
+                flex-direction: column;
+            }
+
+            .product-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+
+        /* 販売会社情報セクション */
+        .vendor-info-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .vendor-info-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        .vendor-info-content {
+            color: #1f2937;
+            line-height: 1.8;
+        }
+
+        .vendor-info-notes {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #e5e7eb;
+            transform: scale(1.1);
+        }
+
+        .modal-close i {
+            font-size: 1.25rem;
+            color: #6b7280;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            padding-right: 40px;
+        }
+
+        .modal-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .modal-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-section h3 i {
+            color: #3b82f6;
+        }
+
+        .modal-section p {
+            color: #4b5563;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .modal-content {
+                max-width: 100%;
+                max-height: 95vh;
+                margin: 10px;
+                border-radius: 12px;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-section h3 {
+                font-size: 1rem;
+            }
+        }
+        
+        /* 同意セクション */
+        .consent-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .consent-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .consent-block {
+            margin-bottom: 2rem;
+        }
+        
+        .consent-block:last-child {
+            margin-bottom: 0;
+        }
+        
+        .consent-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+        
+        .consent-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        .consent-content h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem;
+            color: #2d3748;
+        }
+        
+        .consent-content h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 1.2rem 0 0.8rem;
+            color: #4a5568;
+        }
+        
+        .consent-content ul, .consent-content ol {
+            margin: 0.8rem 0;
+            padding-left: 2rem;
+        }
+        
+        .consent-content li {
+            margin: 0.5rem 0;
+        }
+        
+        .consent-content a {
+            color: #3182ce;
+            text-decoration: underline;
+        }
+        
+        .consent-content p {
+            margin: 0.8rem 0;
+        }
+        
+        .consent-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .consent-checkbox:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+        
+        .consent-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 0.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .consent-checkbox-label {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #2d3748;
+            cursor: pointer;
+        }
+        
+        .consent-required {
+            color: #e53e3e;
+            margin-left: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Hamburger Menu -->
+        <div class="hamburger-menu">
+            <button class="hamburger-button" :class="{ active: menuOpen }" @click="toggleMenu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+
+        <div class="menu-overlay" :class="{ active: menuOpen }" @click="closeMenu"></div>
+
+        <div class="menu-panel" :class="{ active: menuOpen }">
+            <div class="menu-header">
+                <h3>メニュー</h3>
+            </div>
+            <nav class="menu-list">
+                <a v-if="event.event_detail_url" :href="event.event_detail_url" class="menu-item" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-info-circle"></i>
+                    <span>詳細画面</span>
+                </a>
+                <a href="/mypage" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>マイページ</span>
+                </a>
+            </nav>
+            <div class="menu-divider"></div>
+            <div class="menu-footer">
+                <a href="https://www.keio-kanko.co.jp/privacy.html" class="menu-footer-link" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>個人情報保護方針</span>
+                </a>
+                <a href="https://www.keio-kanko.co.jp/" class="menu-footer-link" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-building"></i>
+                    <span>京王観光</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero" :style="event.image_url ? `background-image: url(${event.image_url})` : ''">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>{{ event.name || 'イベント予約' }}</h1>
+                <p v-if="event.location">
+                    <i class="fas fa-map-marker-alt"></i> {{ event.location }}
+                </p>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Loading -->
+            <div v-if="loading" class="loading">
+                <div class="spinner"></div>
+                <p>データを読み込み中...</p>
+            </div>
+
+            <!-- Error -->
+            <div v-if="errorMessage" class="error-message">
+                {{ errorMessage }}
+            </div>
+
+            <!-- Event Info -->
+            <div v-if="!loading && !errorMessage" class="event-info">
+                <div class="event-title-section">
+                    <h2 class="event-main-title">{{ event.name || 'イベント名' }}</h2>
+                    <span v-if="categoryName" class="category-tag">
+                        <i class="fas fa-tag"></i>
+                        {{ categoryName }}
+                    </span>
+                </div>
+
+                <div class="event-meta-section">
+                    <div class="meta-item" v-if="event.organizer_name">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <strong>主催者</strong>
+                            {{ event.organizer_name }}
+                        </div>
+                    </div>
+                    <div class="meta-item" v-if="event.location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <strong>場所</strong>
+                            {{ event.location }}
+                        </div>
+                    </div>
+                    <div class="meta-item" v-if="event.event_start_date && event.event_end_date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <strong>開催期間</strong>
+                            {{ formatDate(event.event_start_date) }} 〜 {{ formatDate(event.event_end_date) }}
+                        </div>
+                    </div>
+                    <div class="meta-item" v-if="event.registration_start_date && event.registration_end_date">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <strong>受付期間</strong>
+                            {{ formatDateTime(event.registration_start_date) }} 〜 {{ formatDateTime(event.registration_end_date) }}
+                        </div>
+                    </div>
+                    <div class="meta-item" v-if="event.detail">
+                        <i class="fas fa-info-circle"></i>
+                        <div>{{ event.detail }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purchase Form -->
+            <div v-if="!loading && !errorMessage" class="purchase-form">
+                <!-- Date Selection -->
+                <div class="form-section">
+                    <h3>
+                        <i class="fas fa-calendar-check"></i>
+                        日付を選択してください
+                        <span class="required">*必須</span>
+                    </h3>
+                    
+                    <div v-if="availableDates.length === 0" class="no-data">
+                        現在予約可能な日付がありません
+                    </div>
+                    
+                    <!-- Button Mode -->
+                    <div v-else-if="event.date_selection_type === 'button' || !event.date_selection_type" class="date-grid">
+                        <button 
+                            v-for="date in availableDates" 
+                            :key="date.date"
+                            class="date-button"
+                            :class="{ selected: selectedDate === date.date }"
+                            @click="selectDate(date.date)"
+                        >
+                            <span class="date-display">{{ formatMonthDay(date.date) }}</span>
+                            <span class="date-weekday">{{ formatWeekday(date.date) }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Calendar Mode -->
+                    <div v-else-if="event.date_selection_type === 'calendar'" class="calendar-container">
+                        <div class="calendar-header">
+                            <div class="calendar-nav">
+                                <button @click="previousMonth" :disabled="!canGoPrevious">
+                                    <i class="fas fa-chevron-left"></i> 前月
+                                </button>
+                                <div class="calendar-month">{{ currentYearMonth }}</div>
+                                <button @click="nextMonth" :disabled="!canGoNext">
+                                    次月 <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid">
+                            <div v-for="day in weekdays" :key="day" class="calendar-weekday">{{ day }}</div>
+                            <div 
+                                v-for="(day, index) in calendarDays" 
+                                :key="index"
+                                class="calendar-day"
+                                :class="{
+                                    selected: selectedDate === day.date,
+                                    disabled: !day.available,
+                                    empty: day.empty,
+                                    'other-month': day.otherMonth
+                                }"
+                                @click="day.available ? selectDate(day.date) : null"
+                            >
+                                {{ day.day }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Selection -->
+                <div class="form-section" v-if="selectedDate">
+                    <h3>
+                        <i class="fas fa-shopping-cart"></i>
+                        商品・枚数を選択してください
+                        <span class="required">*必須</span>
+                    </h3>
+
+                    <div v-if="!loadingProducts && selectedDateProducts.length === 0" class="no-data">
+                        選択された日付に利用可能な商品がありません
+                    </div>
+
+                    <div v-else class="product-list">
+                        <div v-for="item in selectedDateProducts" :key="item.stock_id" class="product-item">
+                            <div class="product-header">
+                                <img 
+                                    v-if="item.image_url" 
+                                    :src="item.image_url" 
+                                    :alt="item.product_name"
+                                    class="product-image"
+                                >
+                                <div v-else class="product-image" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                                    <i class="fas fa-image fa-2x"></i>
+                                </div>
+                                
+                                <div class="product-main-info">
+                                    <div class="product-name">
+                                        {{ item.product_name }}
+                                        <span v-if="item.stock_name">- {{ item.stock_name }}</span>
+                                    </div>
+                                    
+                                    <!-- Charge Description (use product_description or description) -->
+                                    <div v-if="item.product_description || item.description" class="charge-description">
+                                        {{ item.product_description || item.description }}
+                                    </div>
+                                    
+                                    <!-- Details Toggle Button with Charge Description -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                                        <button 
+                                            class="product-details-toggle" 
+                                            :class="{ active: item.showDetails }"
+                                            @click="toggleProductDetails(item.stock_id)"
+                                        >
+                                            <i class="fas fa-chevron-down"></i>
+                                            詳細情報を表示
+                                        </button>
+                                        <div v-if="item.charge_description" style="color: #6b7280; font-size: 0.85rem; margin-left: auto;">
+                                            {{ item.charge_description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Categories with Quantity Selector -->
+                            <div class="price-category-list">
+                                <div v-for="price in item.prices" :key="price.category_name" class="price-category-item">
+                                    <div class="category-info">
+                                        <span class="category-name">{{ price.common_name || price.category_name }}</span>
+                                        <span class="category-price">¥{{ (price.price || 0).toLocaleString() }}</span>
+                                    </div>
+                                    <div class="quantity-controls">
+                                        <button 
+                                            class="quantity-btn" 
+                                            @click="decreaseCategoryQuantity(item.stock_id, price.category_name)"
+                                            :disabled="!getCategoryQuantity(item.stock_id, price.category_name)"
+                                        >
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input 
+                                            type="number" 
+                                            class="quantity-input" 
+                                            :value="getCategoryQuantity(item.stock_id, price.category_name) || 0"
+                                            @input="updateCategoryQuantity(item.stock_id, price.category_name, $event.target.value, item.available)"
+                                            min="0"
+                                            :max="item.available"
+                                        >
+                                        <button 
+                                            class="quantity-btn" 
+                                            @click="increaseCategoryQuantity(item.stock_id, price.category_name, item.available)"
+                                            :disabled="getStockTotalQuantity(item.stock_id) >= item.available"
+                                        >
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <span class="price-unit" v-if="item.price_unit" style="margin-left: 8px; font-size: 0.9rem; color: #6b7280;">{{ item.price_unit }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stock Info and Subtotal -->
+                            <div class="product-footer">
+                                <div class="stock-info">
+                                    <i class="fas fa-box"></i>
+                                    在庫残り: {{ item.available - getStockTotalQuantity(item.stock_id) }} / {{ item.available }}
+                                </div>
+                                <div class="subtotal">
+                                    小計: ¥{{ calculateSubtotal(item).toLocaleString() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option Selection -->
+                <div class="form-section" v-if="selectedDate && selectedDateOptions.length > 0">
+                    <h3>
+                        <i class="fas fa-plus-circle"></i>
+                        オプション選択
+                        <span class="optional-tag">任意</span>
+                    </h3>
+
+                    <div class="option-list">
+                        <div v-for="option in selectedDateOptions" :key="option.option_id" class="option-item">
+                            <div class="option-header">
+                                <div class="option-info">
+                                    <div class="option-name">{{ option.option_name }}</div>
+                                    <div class="option-description" v-if="option.option_description">
+                                        {{ option.option_description }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stock-based Quantity Selector -->
+                            <div class="price-category-list">
+                                <div v-for="stock in option.stocks" :key="stock.stock_id" class="price-category-item">
+                                    <div class="category-info">
+                                        <span class="category-name">{{ stock.stock_name }}</span>
+                                        <span class="category-price">¥{{ (stock.price || option.prices[0]?.price || 0).toLocaleString() }}</span>
+                                    </div>
+                                    <div class="quantity-controls">
+                                        <button 
+                                            class="quantity-btn" 
+                                            @click="decreaseOptionQuantity(option.option_id, stock.stock_id)"
+                                            :disabled="!getOptionQuantity(option.option_id, stock.stock_id)"
+                                        >
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input 
+                                            type="number" 
+                                            class="quantity-input" 
+                                            :value="getOptionQuantity(option.option_id, stock.stock_id) || 0"
+                                            @input="updateOptionQuantity(option.option_id, stock.stock_id, $event.target.value, stock.available)"
+                                            min="0"
+                                            :max="stock.available"
+                                        >
+                                        <button 
+                                            class="quantity-btn" 
+                                            @click="increaseOptionQuantity(option.option_id, stock.stock_id, stock.available)"
+                                            :disabled="getOptionQuantity(option.option_id, stock.stock_id) >= stock.available"
+                                        >
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stock Info and Subtotal -->
+                            <div class="product-footer">
+                                <div class="subtotal">
+                                    小計: ¥{{ calculateOptionSubtotal(option).toLocaleString() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div v-if="selectedDate && selectedDateProducts.length > 0">
+                    <div class="summary-box">
+                        <!-- 選択内容の詳細 -->
+                        <div v-for="item in getSelectedItemsBreakdown()" :key="item.key" class="summary-row">
+                            <span class="summary-label">{{ item.name }} ({{ item.category }})</span>
+                            <span class="summary-value">{{ item.quantity }}名 × ¥{{ item.unit_price.toLocaleString() }}</span>
+                        </div>
+                        
+                        <!-- 区切り線 -->
+                        <div v-if="getSelectedItemsBreakdown().length > 0" style="border-top: 1px solid #e5e7eb; margin: 12px 0;"></div>
+                        
+                        <div class="summary-row summary-total">
+                            <span class="summary-label">合計金額</span>
+                            <span class="summary-value">¥{{ (totalAmount + totalOptionAmount).toLocaleString() }}</span>
+                        </div>
+                    </div>
+
+                    <!-- 同意セクション -->
+                    <div v-if="consent" class="consent-section">
+                        <h3 class="consent-section-title">
+                            <i class="fas fa-file-signature"></i>
+                            個人情報・取引条件の同意
+                        </h3>
+                        
+                        <!-- 個人情報の取り扱い -->
+                        <div v-if="consent.privacy_policy_enabled" class="consent-block">
+                            <h4 class="consent-title">
+                                {{ consent.privacy_policy_title }}
+                                <span v-if="consent.privacy_policy_required" class="consent-required">*</span>
+                            </h4>
+                            <div class="consent-content" v-html="renderMarkdown(consent.privacy_policy_content)"></div>
+                            <label class="consent-checkbox">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="privacyPolicyAgreed"
+                                    :required="consent.privacy_policy_required"
+                                />
+                                <span class="consent-checkbox-label">
+                                    {{ consent.privacy_policy_consent_text }}
+                                    <span v-if="consent.privacy_policy_required" class="consent-required">*</span>
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <!-- 旅行条件について -->
+                        <div v-if="consent.terms_enabled" class="consent-block">
+                            <h4 class="consent-title">
+                                {{ consent.terms_title }}
+                                <span v-if="consent.terms_required" class="consent-required">*</span>
+                            </h4>
+                            <div class="consent-content" v-html="renderMarkdown(consent.terms_content)"></div>
+                            <label class="consent-checkbox">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="termsAgreed"
+                                    :required="consent.terms_required"
+                                />
+                                <span class="consent-checkbox-label">
+                                    {{ consent.terms_consent_text }}
+                                    <span v-if="consent.terms_required" class="consent-required">*</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button 
+                        class="submit-button" 
+                        @click="proceedToBooking"
+                        :disabled="totalQuantity === 0"
+                    >
+                        <i class="fas fa-arrow-right"></i> 予約手続きに進む
+                    </button>
+                </div>
+
+                <!-- 販売会社情報 -->
+                <div v-if="event && (event.vendor_name || event.vendor_business_notes)" class="vendor-info-section">
+                    <h3 class="vendor-info-title">お申込・お問合せ先</h3>
+                    
+                    <div v-if="event.vendor_name" class="vendor-info-content">
+                        {{ event.vendor_name }}
+                    </div>
+                    
+                    <div v-if="event.vendor_business_notes" class="vendor-info-content vendor-info-notes" style="margin-top: 1rem;">
+                        <span v-html="formatBusinessNotes(event.vendor_business_notes)"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details Modal -->
+            <div v-if="showModal" class="modal-overlay" @click="closeModal">
+                <div class="modal-content" @click.stop>
+                    <button class="modal-close" @click="closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    
+                    <div v-if="modalProduct" class="modal-body">
+                        <h2 class="modal-title">{{ modalProduct.product_name || modalProduct.name }}</h2>
+                        
+                        <div v-if="modalProduct.description" class="modal-section">
+                            <h3><i class="fas fa-info-circle"></i> 商品説明</h3>
+                            <p>{{ modalProduct.description }}</p>
+                        </div>
+                        
+                        <div v-if="modalProduct.note" class="modal-section">
+                            <h3><i class="fas fa-exclamation-triangle"></i> 注意事項</h3>
+                            <p>{{ modalProduct.note }}</p>
+                        </div>
+                        
+                        <div v-if="modalProduct.fee_include" class="modal-section">
+                            <h3><i class="fas fa-check-circle"></i> 料金に含まれるもの</h3>
+                            <p>{{ modalProduct.fee_include }}</p>
+                        </div>
+                        
+                        <div v-if="modalProduct.fee_exclude" class="modal-section">
+                            <h3><i class="fas fa-times-circle"></i> 料金に含まれないもの</h3>
+                            <p>{{ modalProduct.fee_exclude }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    loading: true,
+                    loadingProducts: false,
+                    errorMessage: '',
+                    eventId: null,
+                    event: {},
+                    product: {},
+                    availableDates: [],
+                    selectedDate: null,
+                    selectedDateProducts: [],
+                    selectedDateOptions: [],
+                    quantities: {},
+                    optionQuantities: {},
+                    // Calendar mode
+                    currentYear: new Date().getFullYear(),
+                    currentMonth: new Date().getMonth() + 1,
+                    weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+                    // Modal state
+                    showModal: false,
+                    modalProduct: null,
+                    // Menu state
+                    menuOpen: false,
+                    // Category mapping
+                    categoryMap: {
+                        1: 'セミナー',
+                        2: 'ワークショップ',
+                        3: '展示会',
+                        4: 'コンサート',
+                        5: 'スポーツ',
+                        6: 'フェスティバル',
+                        7: 'その他'
+                    },
+                    // Consent data
+                    consent: null,
+                    privacyPolicyAgreed: false,
+                    termsAgreed: false
+                };
+            },
+            computed: {
+                // カテゴリー名を取得
+                categoryName() {
+                    if (!this.event.category) return '';
+                    return this.categoryMap[this.event.category] || this.event.category;
+                },
+                totalQuantity() {
+                    let total = 0;
+                    Object.values(this.quantities).forEach(stockQty => {
+                        if (typeof stockQty === 'object') {
+                            Object.values(stockQty).forEach(qty => {
+                                total += parseInt(qty) || 0;
+                            });
+                        }
+                    });
+                    return total;
+                },
+                totalAmount() {
+                    let total = 0;
+                    this.selectedDateProducts.forEach(item => {
+                        total += this.calculateSubtotal(item);
+                    });
+                    return total;
+                },
+                // 購入制限数を超えているかチェック
+                isPurchaseLimitExceeded() {
+                    // 各商品の purchase_limit をチェック
+                    for (const product of this.selectedDateProducts) {
+                        if (product.purchase_limit) {
+                            const productTotal = this.getStockTotalQuantity(product.stock_id);
+                            if (productTotal > product.purchase_limit) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                },
+                totalOptionQuantity() {
+                    let total = 0;
+                    Object.values(this.optionQuantities).forEach(optionQty => {
+                        if (typeof optionQty === 'object') {
+                            Object.values(optionQty).forEach(qty => {
+                                total += parseInt(qty) || 0;
+                            });
+                        }
+                    });
+                    return total;
+                },
+                totalOptionAmount() {
+                    let total = 0;
+                    this.selectedDateOptions.forEach(option => {
+                        total += this.calculateOptionSubtotal(option);
+                    });
+                    return total;
+                },
+                currentYearMonth() {
+                    return `${this.currentYear}年${this.currentMonth}月`;
+                },
+                calendarDays() {
+                    if (!this.event || this.event.date_selection_type !== 'calendar') return [];
+                    
+                    const firstDay = new Date(this.currentYear, this.currentMonth - 1, 1);
+                    const lastDay = new Date(this.currentYear, this.currentMonth, 0);
+                    const startWeekday = firstDay.getDay();
+                    const daysInMonth = lastDay.getDate();
+                    
+                    const days = [];
+                    
+                    // 前月の空白
+                    for (let i = 0; i < startWeekday; i++) {
+                        days.push({ day: '', empty: true, available: false });
+                    }
+                    
+                    // 当月の日付
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = `${this.currentYear}-${String(this.currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const isAvailable = this.availableDates.some(d => d.date === dateStr);
+                        
+                        days.push({
+                            day: day,
+                            date: dateStr,
+                            available: isAvailable,
+                            empty: false,
+                            otherMonth: false
+                        });
+                    }
+                    
+                    return days;
+                },
+                canGoPrevious() {
+                    if (!this.availableDates.length) return false;
+                    const minDate = new Date(Math.min(...this.availableDates.map(d => new Date(d.date))));
+                    const currentFirst = new Date(this.currentYear, this.currentMonth - 1, 1);
+                    return currentFirst > minDate;
+                },
+                canGoNext() {
+                    if (!this.availableDates.length) return false;
+                    const maxDate = new Date(Math.max(...this.availableDates.map(d => new Date(d.date))));
+                    const currentLast = new Date(this.currentYear, this.currentMonth, 0);
+                    return currentLast < maxDate;
+                }
+            },
+            async mounted() {
+                // URLからevent_idまたはevent_urlを取得
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventIdParam = urlParams.get('event_id');
+                
+                // パスから event_url を取得（例: /product-detail/skytree）
+                const pathParts = window.location.pathname.split('/');
+                const eventUrlParam = pathParts.length >= 3 ? pathParts[2] : null;
+                
+                // event_url が指定されている場合（パス形式）
+                if (eventUrlParam && eventUrlParam !== '') {
+                    try {
+                        // event_url からイベント情報を取得
+                        const response = await axios.get(`/api/events/by-url/${eventUrlParam}`);
+                        let eventData = response.data.event || response.data;
+                        
+                        // form_field_settingsからevent_detail_urlを抽出
+                        if (eventData.form_field_settings) {
+                            try {
+                                const settings = typeof eventData.form_field_settings === 'string' 
+                                    ? JSON.parse(eventData.form_field_settings) 
+                                    : eventData.form_field_settings;
+                                
+                                console.log('form_field_settings parsed (by URL):', settings);
+                                
+                                if (settings.event_detail_url) {
+                                    eventData.event_detail_url = settings.event_detail_url;
+                                    console.log('event_detail_url extracted (by URL):', eventData.event_detail_url);
+                                }
+                            } catch (e) {
+                                console.error('form_field_settings parse error (by URL):', e);
+                            }
+                        }
+                        
+                        this.event = eventData;
+                        this.consent = this.event.consent || null;
+                        this.eventId = this.event.id;
+                        console.log('イベント情報取得完了（by URL）:', this.event);
+                        console.log('イベント詳細URL（by URL）:', this.event.event_detail_url);
+                        await this.loadData();
+                    } catch (error) {
+                        console.error('イベント取得エラー（by URL）:', error);
+                        this.errorMessage = 'イベントが見つかりません';
+                        this.loading = false;
+                    }
+                }
+                // event_id が指定されている場合（クエリパラメータ形式）
+                else if (eventIdParam) {
+                    this.eventId = eventIdParam;
+                    await this.loadData();
+                }
+                // どちらも指定されていない場合
+                else {
+                    this.errorMessage = 'イベントが指定されていません';
+                    this.loading = false;
+                    return;
+                }
+            },
+            methods: {
+                async loadData() {
+                    try {
+                        console.log('loadData開始');
+                        
+                        // イベント情報がまだ取得されていない場合のみ取得
+                        if (!this.event || !this.event.id) {
+                            const eventResponse = await axios.get(`/api/events/${this.eventId}`);
+                            let eventData = eventResponse.data.event || eventResponse.data;
+                            
+                            // form_field_settingsからevent_detail_urlを抽出
+                            if (eventData.form_field_settings) {
+                                try {
+                                    const settings = typeof eventData.form_field_settings === 'string' 
+                                        ? JSON.parse(eventData.form_field_settings) 
+                                        : eventData.form_field_settings;
+                                    
+                                    console.log('form_field_settings parsed:', settings);
+                                    
+                                    if (settings.event_detail_url) {
+                                        eventData.event_detail_url = settings.event_detail_url;
+                                        console.log('event_detail_url extracted:', eventData.event_detail_url);
+                                    }
+                                } catch (e) {
+                                    console.error('form_field_settings parse error:', e);
+                                }
+                            }
+                            
+                            // eventオブジェクト全体を再代入してリアクティビティを確保
+                            this.event = eventData;
+                            this.consent = this.event.consent || null;
+                            
+                            console.log('イベント情報取得完了:', this.event);
+                            console.log('同意設定:', this.consent);
+                            console.log('イベント詳細URL:', this.event.event_detail_url);
+                        } else {
+                            console.log('イベント情報は既に取得済み:', this.event);
+                        }
+
+                        // イベントに紐付く全商品を取得
+                        const productsResponse = await axios.get(`/api/v1/products?event_id=${this.eventId}&enable_flg=1`);
+                        const products = productsResponse.data.data || [];
+                        console.log('商品取得完了:', products.length, '件');
+
+                        if (products.length === 0) {
+                            this.errorMessage = 'このイベントには商品が登録されていません';
+                            this.loading = false;
+                            return;
+                        }
+
+                        // 最初の商品を代表として使用（商品名表示用）
+                        this.product = products[0];
+
+                        // 全商品の在庫情報を取得（日付ごと）
+                        await this.loadAvailableDates(products);
+                        console.log('在庫読み込み完了');
+
+                        this.loading = false;
+                    } catch (error) {
+                        console.error('データ読み込みエラー:', error);
+                        this.errorMessage = 'データの読み込みに失敗しました';
+                        this.loading = false;
+                    }
+                },
+                async loadAvailableDates(products) {
+                    try {
+                        console.log('loadAvailableDates開始, 商品数:', products.length);
+                        // イベントIDで在庫を一括取得
+                        const response = await axios.get(`/api/stocks?event_id=${this.eventId}`);
+                        const allStocks = response.data.stocks || [];
+                        console.log('在庫取得完了:', allStocks.length, '件');
+
+                        // 今日の日付を取得（YYYY-MM-DD形式）
+                        const today = new Date();
+                        const todayStr = today.toISOString().split('T')[0];
+
+                        // 商品IDで在庫を分類
+                        allStocks.forEach(stock => {
+                            const product = products.find(p => p.id === stock.product_id);
+                            if (product) {
+                                stock.product_name = product.name;
+                            }
+                        });
+
+                        // 日付ごとにグループ化（販売期間と締切日数を考慮）
+                        const dateMap = {};
+                        allStocks.forEach(stock => {
+                            if (stock.date && stock.available > 0) {
+                                const stockDate = stock.date;
+                                
+                                // 販売期間チェック
+                                const salesStart = stock.sales_start ? stock.sales_start.split('T')[0] : null;
+                                const salesEnd = stock.sales_end ? stock.sales_end.split('T')[0] : null;
+                                
+                                // 販売開始日より前、または販売終了日より後の日付は除外
+                                if (salesStart && stockDate < salesStart) {
+                                    console.log(`日付 ${stockDate} は販売開始日 ${salesStart} より前のため除外`);
+                                    return;
+                                }
+                                if (salesEnd && stockDate > salesEnd) {
+                                    console.log(`日付 ${stockDate} は販売終了日 ${salesEnd} より後のため除外`);
+                                    return;
+                                }
+                                
+                                // 締切日数チェック（closing_trade）
+                                const closingTrade = stock.closing_trade || 0;
+                                const minBookingDate = new Date(today);
+                                minBookingDate.setDate(minBookingDate.getDate() + closingTrade);
+                                const minBookingDateStr = minBookingDate.toISOString().split('T')[0];
+                                
+                                if (stockDate < minBookingDateStr) {
+                                    console.log(`日付 ${stockDate} は締切日数 ${closingTrade} により予約不可（最小予約日: ${minBookingDateStr}）`);
+                                    return;
+                                }
+                                
+                                if (!dateMap[stockDate]) {
+                                    dateMap[stockDate] = [];
+                                }
+                                dateMap[stockDate].push({
+                                    stock_id: stock.id,
+                                    product_id: stock.product_id,
+                                    product_name: stock.product_name || stock.product_name,
+                                    stock_name: stock.stock_name,
+                                    stock_date: stockDate,
+                                    price_band: stock.price_band,
+                                    available: stock.available,
+                                    purchase_limit: stock.purchase_limit,
+                                    prices: [] // 価格情報は後で追加
+                                });
+                            }
+                        });
+
+                        this.availableDates = Object.keys(dateMap).sort().map(date => ({
+                            date: date,
+                            stocks: dateMap[date]
+                        }));
+                        console.log('日付グループ化完了:', this.availableDates.length, '日分');
+
+                        // 各在庫の価格情報を取得
+                        console.log('loadPrices呼び出し開始');
+                        await this.loadPrices(products);
+                        console.log('loadPrices完了');
+                    } catch (error) {
+                        console.error('在庫情報読み込みエラー:', error);
+                    }
+                },
+                async loadPrices(products) {
+                    try {
+                        // 各商品の価格情報を取得
+                        for (const product of products) {
+                            const response = await axios.get(`/api/products/${product.id}`);
+                            const productData = response.data.product || response.data;
+                            const prices = productData.prices || [];
+                            console.log(`商品 ${product.id} の価格情報:`, prices);
+
+                            // 在庫に価格情報を追加
+                            this.availableDates.forEach(dateObj => {
+                                dateObj.stocks = dateObj.stocks.filter(stock => {
+                                    if (stock.product_id === product.id) {
+                                        // price_bandが設定されている場合のみ表示
+                                        if (stock.price_band) {
+                                            stock.prices = prices.filter(p => p.price_band === stock.price_band);
+                                            console.log(`在庫 ${stock.stock_id} に価格を追加:`, stock.prices);
+                                            return true; // 表示する
+                                        } else {
+                                            // price_bandが未設定の在庫は除外
+                                            console.warn(`在庫ID ${stock.stock_id} (商品: ${stock.product_name}, 日付: ${stock.stock_date}) は価格帯が未設定のため表示されません`);
+                                            return false; // 除外
+                                        }
+                                    }
+                                    return true; // 他の商品の在庫は残す
+                                });
+                            });
+                        }
+                        console.log('最終的なavailableDates:', this.availableDates);
+                    } catch (error) {
+                        console.error('価格情報読み込みエラー:', error);
+                    }
+                },
+                async selectDate(date) {
+                    console.log('[DEBUG] 日付選択開始:', date);
+                    this.selectedDate = date;
+                    this.quantities = {};
+                    this.optionQuantities = {};
+                    this.loadingProducts = true;
+                    console.log('[DEBUG] selectedDate設定完了:', this.selectedDate);
+                    
+                    try {
+                        // 新しいAPIを使用して商品詳細情報を取得
+                        const response = await axios.get(`/api/events/${this.eventId}/products-by-date?date=${date}`);
+                        const productsData = response.data.products || [];
+                        
+                        // 商品データを在庫ベースに展開
+                        this.selectedDateProducts = [];
+                        for (const product of productsData) {
+                            for (const stock of product.stocks || []) {
+                                // 価格情報を取得
+                                const pricesResponse = await axios.get(`/api/products/${product.product_id}`);
+                                const productDetail = pricesResponse.data.product || pricesResponse.data;
+                                const prices = productDetail.prices || [];
+                                
+                                // price_bandでフィルタ
+                                const filteredPrices = stock.price_band 
+                                    ? prices.filter(p => p.price_band === stock.price_band)
+                                    : prices;
+                                
+                                if (filteredPrices.length > 0) {
+                                    this.selectedDateProducts.push({
+                                        stock_id: stock.stock_id,
+                                        stock_type: stock.stock_type || 'individual', // 在庫タイプを追加
+                                        product_id: product.product_id,
+                                        product_name: product.product_name,
+                                        stock_name: stock.stock_name,
+                                        description: product.description,
+                                        note: product.note,
+                                        fee_include: product.fee_include,
+                                        fee_exclude: product.fee_exclude,
+                                        image_url: product.image_url,
+                                        price_unit: productDetail.price_unit || '人',
+                                        charge_description: productDetail.charge_description || null,
+                                        price_band: stock.price_band,
+                                        available: stock.available,
+                                        purchase_limit: product.purchase_limit,
+                                        display_order: product.display_order || 1,
+                                        prices: filteredPrices,
+                                        showDetails: false // 詳細表示フラグ
+                                    });
+                                }
+                            }
+                        }
+                        
+                        // display_orderでソート（昇順）
+                        this.selectedDateProducts.sort((a, b) => {
+                            if (a.display_order !== b.display_order) {
+                                return a.display_order - b.display_order;
+                            }
+                            return a.product_id - b.product_id;
+                        });
+                        
+                        console.log('[DEBUG] 商品データ取得完了:', this.selectedDateProducts.length);
+                        if (this.selectedDateProducts.length > 0) {
+                            console.log('[DEBUG] 最初の商品:', this.selectedDateProducts[0]);
+                        }
+                    } catch (error) {
+                        console.error('商品データ取得エラー:', error);
+                    } finally {
+                        this.loadingProducts = false;
+                    }
+                    
+                    // オプションを読み込み
+                    console.log('[DEBUG] オプション読み込み呼び出し前');
+                    await this.loadOptionsForDate(date);
+                    console.log('[DEBUG] オプション読み込み呼び出し後');
+                    console.log('[DEBUG] selectedDateOptions.length:', this.selectedDateOptions.length);
+                },
+                getCategoryQuantity(stockId, categoryName) {
+                    if (!this.quantities[stockId]) return 0;
+                    return this.quantities[stockId][categoryName] || 0;
+                },
+                getStockTotalQuantity(stockId) {
+                    if (!this.quantities[stockId]) return 0;
+                    return Object.values(this.quantities[stockId]).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0);
+                },
+                increaseCategoryQuantity(stockId, categoryName, maxAvailable) {
+                    console.log('増やす:', { stockId, categoryName, maxAvailable });
+                    if (!this.quantities[stockId]) {
+                        this.quantities[stockId] = {};
+                    }
+                    
+                    // 現在の商品情報を取得
+                    const product = this.selectedDateProducts.find(p => p.stock_id === stockId);
+                    const purchaseLimit = product?.purchase_limit;
+                    
+                    const currentTotal = this.getStockTotalQuantity(stockId);
+                    console.log('現在の合計:', currentTotal, '最大:', maxAvailable, 'purchase_limit:', purchaseLimit);
+                    
+                    // 在庫上限と購入制限数の両方をチェック
+                    let effectiveMax = maxAvailable;
+                    if (purchaseLimit && purchaseLimit < effectiveMax) {
+                        effectiveMax = purchaseLimit;
+                        console.log('購入制限数により上限を調整:', effectiveMax);
+                    }
+                    
+                    if (currentTotal < effectiveMax) {
+                        const current = this.quantities[stockId][categoryName] || 0;
+                        console.log('現在のカテゴリ数量:', current);
+                        this.quantities[stockId][categoryName] = current + 1;
+                        console.log('更新後:', this.quantities[stockId][categoryName]);
+                    } else {
+                        if (purchaseLimit && currentTotal >= purchaseLimit) {
+                            console.log('購入制限数に達しています');
+                            alert(`この商品の購入制限数は${purchaseLimit}個です。`);
+                        } else {
+                            console.log('在庫上限に達しています');
+                        }
+                    }
+                },
+                decreaseCategoryQuantity(stockId, categoryName) {
+                    console.log('減らす:', { stockId, categoryName });
+                    if (!this.quantities[stockId]) {
+                        console.log('quantities[stockId]が存在しません');
+                        return;
+                    }
+                    const current = this.quantities[stockId][categoryName] || 0;
+                    console.log('現在のカテゴリ数量:', current);
+                    if (current > 0) {
+                        this.quantities[stockId][categoryName] = current - 1;
+                        console.log('更新後:', this.quantities[stockId][categoryName]);
+                    } else {
+                        console.log('既に0です');
+                    }
+                },
+                updateCategoryQuantity(stockId, categoryName, value, maxAvailable) {
+                    if (!this.quantities[stockId]) {
+                        this.quantities[stockId] = {};
+                    }
+                    
+                    // 現在の商品情報を取得
+                    const product = this.selectedDateProducts.find(p => p.stock_id === stockId);
+                    const purchaseLimit = product?.purchase_limit;
+                    
+                    const qty = parseInt(value) || 0;
+                    const currentTotal = this.getStockTotalQuantity(stockId);
+                    const currentCategory = this.quantities[stockId][categoryName] || 0;
+                    const otherTotal = currentTotal - currentCategory;
+                    
+                    // 在庫上限と購入制限数の両方を考慮
+                    let effectiveMax = maxAvailable - otherTotal;
+                    if (purchaseLimit) {
+                        const purchaseLimitForCategory = purchaseLimit - otherTotal;
+                        effectiveMax = Math.min(effectiveMax, purchaseLimitForCategory);
+                    }
+                    
+                    this.quantities[stockId][categoryName] = Math.min(Math.max(0, qty), Math.max(0, effectiveMax));
+                },
+                calculateSubtotal(item) {
+                    if (!this.quantities[item.stock_id]) return 0;
+                    let total = 0;
+                    item.prices.forEach(price => {
+                        const qty = this.quantities[item.stock_id][price.category_name] || 0;
+                        total += qty * (price.price || 0);
+                    });
+                    return total;
+                },
+                // オプション関連メソッド
+                async loadOptionsForDate(date) {
+                    console.log('[DEBUG] loadOptionsForDate開始:', { eventId: this.eventId, date });
+                    try {
+                        const url = `/api/events/${this.eventId}/options-by-date?date=${date}`;
+                        console.log('[DEBUG] APIリクエスト:', url);
+                        
+                        const response = await axios.get(url);
+                        console.log('[DEBUG] APIレスポンス:', response.data);
+                        
+                        const { options } = response.data;
+                        console.log('[DEBUG] オプション配列:', options);
+                        
+                        // オプションごとに在庫情報を統合
+                        this.selectedDateOptions = options.map(option => {
+                            // 全在庫の合計を計算
+                            const totalAvailable = option.stocks.reduce((sum, stock) => sum + (stock.available || 0), 0);
+                            console.log('[DEBUG] オプション処理:', option.option_name, '在庫:', totalAvailable, 'prices:', option.prices);
+                            return {
+                                option_id: option.option_id,
+                                option_name: option.option_name,
+                                option_description: option.option_description,
+                                image_url: option.image_url,
+                                sales_start: option.sales_start,
+                                sales_end: option.sales_end,
+                                closing_trade: option.closing_trade,
+                                purchase_limit: option.purchase_limit,
+                                prices: option.prices,
+                                stocks: option.stocks,
+                                available: totalAvailable
+                            };
+                        });
+                        
+                        console.log('[DEBUG] オプション読み込み完了:', this.selectedDateOptions);
+                        console.log('[DEBUG] オプション数:', this.selectedDateOptions.length);
+                    } catch (error) {
+                        console.error('[ERROR] オプション読み込みエラー:', error);
+                        console.error('[ERROR] エラー詳細:', error.response?.data);
+                    }
+                },
+                getOptionQuantity(optionId, stockId) {
+                    if (!this.optionQuantities[optionId]) return 0;
+                    return this.optionQuantities[optionId][stockId] || 0;
+                },
+                getOptionTotalQuantity(optionId) {
+                    if (!this.optionQuantities[optionId]) return 0;
+                    return Object.values(this.optionQuantities[optionId]).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0);
+                },
+                increaseOptionQuantity(optionId, stockId, maxAvailable) {
+                    if (!this.optionQuantities[optionId]) {
+                        this.optionQuantities[optionId] = {};
+                    }
+                    
+                    // 現在のオプション情報を取得
+                    const option = this.selectedDateOptions.find(o => o.option_id === optionId);
+                    const purchaseLimit = option?.purchase_limit;
+                    
+                    const current = this.optionQuantities[optionId][stockId] || 0;
+                    const currentTotal = this.getOptionTotalQuantity(optionId);
+                    
+                    // 在庫上限と購入制限数の両方をチェック
+                    let effectiveMax = maxAvailable;
+                    if (purchaseLimit && currentTotal >= purchaseLimit) {
+                        alert(`このオプションの購入制限数は${purchaseLimit}個です。`);
+                        return;
+                    }
+                    
+                    if (current < effectiveMax) {
+                        this.optionQuantities[optionId][stockId] = current + 1;
+                    }
+                },
+                decreaseOptionQuantity(optionId, stockId) {
+                    if (!this.optionQuantities[optionId]) return;
+                    const current = this.optionQuantities[optionId][stockId] || 0;
+                    if (current > 0) {
+                        this.optionQuantities[optionId][stockId] = current - 1;
+                    }
+                },
+                updateOptionQuantity(optionId, stockId, value, maxAvailable) {
+                    if (!this.optionQuantities[optionId]) {
+                        this.optionQuantities[optionId] = {};
+                    }
+                    
+                    // 現在のオプション情報を取得
+                    const option = this.selectedDateOptions.find(o => o.option_id === optionId);
+                    const purchaseLimit = option?.purchase_limit;
+                    
+                    const qty = parseInt(value) || 0;
+                    
+                    // 購入制限数をチェック
+                    let effectiveMax = maxAvailable;
+                    if (purchaseLimit && purchaseLimit < effectiveMax) {
+                        effectiveMax = purchaseLimit;
+                    }
+                    
+                    if (qty <= effectiveMax) {
+                        this.optionQuantities[optionId][stockId] = qty;
+                    } else {
+                        this.optionQuantities[optionId][stockId] = effectiveMax;
+                    }
+                },
+                calculateOptionSubtotal(option) {
+                    if (!this.optionQuantities[option.option_id]) return 0;
+                    let total = 0;
+                    option.stocks.forEach(stock => {
+                        const qty = this.optionQuantities[option.option_id][stock.stock_id] || 0;
+                        total += qty * (stock.price || option.prices[0]?.price || 0);
+                    });
+                    return total;
+                },
+                toggleProductDetails(stockId) {
+                    // モーダルを開いて商品詳細を表示
+                    const product = this.selectedDateProducts.find(p => p.stock_id === stockId);
+                    if (product) {
+                        this.modalProduct = product;
+                        this.showModal = true;
+                        // Prevent body scroll when modal is open
+                        document.body.style.overflow = 'hidden';
+                    }
+                },
+                closeModal() {
+                    this.showModal = false;
+                    this.modalProduct = null;
+                    // Restore body scroll
+                    document.body.style.overflow = '';
+                },
+                // Markdown rendering function
+                renderMarkdown(text) {
+                    if (!text) return '';
+                    
+                    // Simple markdown to HTML conversion
+                    let html = text;
+                    
+                    // Headers
+                    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+                    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+                    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+                    
+                    // Links
+                    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                    
+                    // Bold
+                    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    
+                    // Lists (unordered)
+                    html = html.replace(/^\- (.+)$/gm, '<li>$1</li>');
+                    html = html.replace(/(<li>.+<\/li>)/s, '<ul>$1</ul>');
+                    
+                    // Paragraphs
+                    html = html.split('\n\n').map(para => {
+                        if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<li')) {
+                            return para;
+                        }
+                        return `<p>${para}</p>`;
+                    }).join('\n');
+                    
+                    return html;
+                },
+                proceedToBooking() {
+                    if (this.totalQuantity === 0) {
+                        alert('数量を選択してください');
+                        return;
+                    }
+                    
+                    // 同意確認
+                    if (this.consent) {
+                        if (this.consent.privacy_policy_enabled && this.consent.privacy_policy_required && !this.privacyPolicyAgreed) {
+                            alert('個人情報の取り扱いに同意してください');
+                            return;
+                        }
+                        if (this.consent.terms_enabled && this.consent.terms_required && !this.termsAgreed) {
+                            alert('旅行条件に同意してください');
+                            return;
+                        }
+                    }
+
+                    // 選択した商品とオプションを配列化
+                    const selectedItems = [];
+                    
+                    // 商品を追加
+                    this.selectedDateProducts.forEach(product => {
+                        const productQuantities = this.quantities[product.stock_id] || {};
+                        Object.entries(productQuantities).forEach(([category, qty]) => {
+                            if (qty > 0) {
+                                // 表示用のカテゴリ名を取得（price_band + "-" + price_name）
+                                const displayCategory = this.getCategoryDisplayName(product, category);
+                                
+                                selectedItems.push({
+                                    type: 'product',
+                                    id: product.product_id,
+                                    name: product.product_name,
+                                    stock_id: product.stock_id,
+                                    stock_type: product.stock_type || 'individual', // 在庫タイプを追加
+                                    category: displayCategory,  // "A-大人" のような表示名
+                                    category_key: category,     // "A-名称1" のような内部キー
+                                    quantity: qty,
+                                    unit_price: this.getCategoryPrice(product, category),
+                                    subtotal: qty * this.getCategoryPrice(product, category)
+                                });
+                            }
+                        });
+                    });
+                    
+                    // オプションを追加
+                    this.selectedDateOptions.forEach(option => {
+                        option.stocks.forEach(stock => {
+                            const qty = this.getOptionQuantity(option.option_id, stock.stock_id);
+                            if (qty > 0) {
+                                selectedItems.push({
+                                    type: 'option',
+                                    id: option.option_id,
+                                    name: option.option_name,
+                                    stock_id: stock.stock_id,
+                                    stock_type: stock.stock_type || 'individual', // 在庫タイプを追加
+                                    category: stock.stock_name || stock.category_name || 'オプション',
+                                    quantity: qty,
+                                    unit_price: stock.price,
+                                    subtotal: qty * stock.price
+                                });
+                            }
+                        });
+                    });
+
+                    // LocalStorageに予約データを保存
+                    const bookingDraft = {
+                        event_id: this.eventId,
+                        event_name: this.event.name,
+                        event_url: this.event.event_url,
+                        participation_date: this.selectedDate,
+                        items: selectedItems,
+                        total_amount: this.totalAmount + this.totalOptionAmount,
+                        // 同意情報
+                        privacy_policy_agreed: this.privacyPolicyAgreed,
+                        terms_agreed: this.termsAgreed
+                    };
+                    
+                    localStorage.setItem('bookingDraft', JSON.stringify(bookingDraft));
+                    
+                    console.log('Booking draft saved:', bookingDraft);
+                    
+                    // メール認証ページへ遷移
+                    window.location.href = '/auth-email';
+                },
+                
+                // 価格カテゴリーの単価を取得
+                getCategoryPrice(product, category) {
+                    const price = product.prices.find(p => p.category_name === category);
+                    return price ? price.price : 0;
+                },
+                
+                // カテゴリーの表示名を取得（price_band + "-" + price_name）
+                getCategoryDisplayName(product, category) {
+                    const price = product.prices.find(p => p.category_name === category);
+                    if (!price) return category;
+                    
+                    // price_bandとprice_nameが存在する場合
+                    if (price.price_band && price.price_name) {
+                        return `${price.price_band}-${price.price_name}`;
+                    }
+                    
+                    // common_nameが存在する場合
+                    if (price.common_name) {
+                        // price_bandがあれば組み合わせる
+                        if (price.price_band) {
+                            return `${price.price_band}-${price.common_name}`;
+                        }
+                        return price.common_name;
+                    }
+                    
+                    // price_nameのみの場合
+                    if (price.price_name) {
+                        return price.price_name;
+                    }
+                    
+                    // デフォルトはcategory_name
+                    return category;
+                },
+                
+                // 選択された商品の内訳を取得（サマリー表示用）
+                getSelectedItemsBreakdown() {
+                    const items = [];
+                    
+                    // 商品を追加
+                    this.selectedDateProducts.forEach(product => {
+                        const productQuantities = this.quantities[product.stock_id] || {};
+                        Object.entries(productQuantities).forEach(([category, qty]) => {
+                            if (qty > 0) {
+                                const displayCategory = this.getCategoryDisplayName(product, category);
+                                const unitPrice = this.getCategoryPrice(product, category);
+                                
+                                items.push({
+                                    key: `product-${product.stock_id}-${category}`,
+                                    name: product.product_name,
+                                    category: displayCategory,
+                                    quantity: qty,
+                                    unit_price: unitPrice
+                                });
+                            }
+                        });
+                    });
+                    
+                    // オプションを追加
+                    this.selectedDateOptions.forEach(option => {
+                        option.stocks.forEach(stock => {
+                            const qty = this.getOptionQuantity(option.option_id, stock.stock_id);
+                            if (qty > 0) {
+                                items.push({
+                                    key: `option-${option.option_id}-${stock.stock_id}`,
+                                    name: option.option_name,
+                                    category: stock.stock_name || stock.category_name || 'オプション',
+                                    quantity: qty,
+                                    unit_price: stock.price || 0
+                                });
+                            }
+                        });
+                    });
+                    
+                    return items;
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+                },
+                formatDateTime(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                },
+                formatMonthDay(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                },
+                formatWeekday(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+                    return weekdays[date.getDay()];
+                },
+                previousMonth() {
+                    if (this.currentMonth === 1) {
+                        this.currentMonth = 12;
+                        this.currentYear--;
+                    } else {
+                        this.currentMonth--;
+                    }
+                },
+                nextMonth() {
+                    if (this.currentMonth === 12) {
+                        this.currentMonth = 1;
+                        this.currentYear++;
+                    } else {
+                        this.currentMonth++;
+                    }
+                },
+
+                // 営業に関する注意事項の改行をBRタグに変換
+                formatBusinessNotes(text) {
+                    if (!text) return '';
+                    // 改行コード（\n または \r\n）を <br> タグに変換
+                    return text.replace(/\r\n|\r|\n/g, '<br>');
+                },
+
+                // ハンバーガーメニューの開閉
+                // ハンバーガーメニューの開閉
+                toggleMenu() {
+                    this.menuOpen = !this.menuOpen;
+                },
+
+                closeMenu() {
+                    this.menuOpen = false;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

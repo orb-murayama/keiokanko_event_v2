@@ -1,0 +1,31 @@
+{
+  "name": "keiokanko-event-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "イベント予約管理システム v2 - モノレポ構成",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=@keiokanko/api-service",
+    "dev:customer": "npm run dev --workspace=@keiokanko/customer-site",
+    "dev:admin": "npm run dev --workspace=@keiokanko/admin-site",
+    "build:all": "npm run build --workspaces",
+    "build:api": "npm run build --workspace=@keiokanko/api-service",
+    "build:customer": "npm run build --workspace=@keiokanko/customer-site",
+    "build:admin": "npm run build --workspace=@keiokanko/admin-site",
+    "deploy:all": "npm run deploy --workspaces",
+    "deploy:api": "npm run deploy --workspace=@keiokanko/api-service",
+    "deploy:customer": "npm run deploy --workspace=@keiokanko/customer-site",
+    "deploy:admin": "npm run deploy --workspace=@keiokanko/admin-site",
+    "clean": "rm -rf packages/*/node_modules packages/*/dist node_modules",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理画面ダッシュボード | イベント予約管理システム</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <link rel="stylesheet" href="/static/css/utilities.css">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- 管理画面認証チェック -->
+    <script src="/static/js/admin-auth.js"></script>
+    
+    <style>
+        .admin-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .dashboard-card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        
+        .dashboard-card-icon.blue {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .dashboard-card-icon.green {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .dashboard-card-icon.orange {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .dashboard-card-icon.purple {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .dashboard-card-icon.red {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .dashboard-card-icon.teal {
+            background: #e0f2f1;
+            color: #00796b;
+        }
+        
+        .dashboard-card-icon.indigo {
+            background: #e8eaf6;
+            color: #3949ab;
+        }
+        
+        .dashboard-card-icon.pink {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        
+        .dashboard-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-card-description {
+            font-size: 0.875rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-header p {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <h1 class="admin-header-title">
+                <i class="fas fa-tachometer-alt"></i>
+                管理画面ダッシュボード
+            </h1>
+            <button class="btn btn-secondary" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                ログアウト
+            </button>
+        </div>
+    </header>
+
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="dashboard-header">
+                <h1>管理機能メニュー</h1>
+                <p>以下から各管理機能にアクセスできます</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- 予約管理 -->
+                <a href="/bookings-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon blue">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">予約管理</h2>
+                    <p class="dashboard-card-description">予約の一覧表示、詳細確認、編集、削除が可能です</p>
+                </a>
+
+                <!-- イベント管理 -->
+                <a href="/events-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon green">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">イベント管理</h2>
+                    <p class="dashboard-card-description">イベントの登録、編集、削除、公開設定が可能です</p>
+                </a>
+
+                <!-- 商品管理 -->
+                <a href="/products-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon orange">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">商品管理</h2>
+                    <p class="dashboard-card-description">商品の登録、編集、削除、価格設定が可能です</p>
+                </a>
+
+                <!-- オプション管理 -->
+                <a href="/options-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon teal">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">オプション管理</h2>
+                    <p class="dashboard-card-description">オプションの登録、編集、削除、価格設定が可能です</p>
+                </a>
+
+                <!-- クライアント管理 -->
+                <a href="/clients-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon indigo">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">クライアント管理</h2>
+                    <p class="dashboard-card-description">クライアントの登録、編集、削除が可能です</p>
+                </a>
+
+                <!-- アカウント管理 -->
+                <a href="/accounts-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon pink">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">アカウント管理</h2>
+                    <p class="dashboard-card-description">管理者アカウントの登録、編集、削除が可能です</p>
+                </a>
+
+                <!-- 会員管理（system_admin と admin のみ） -->
+                <a href="/members-list.html" class="dashboard-card" data-roles="system_admin,admin">
+                    <div class="dashboard-card-icon red">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">会員管理</h2>
+                    <p class="dashboard-card-description">会員の登録、編集、削除が可能です</p>
+                </a>
+
+                <!-- 販売会社管理 -->
+                <a href="/vendors-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon green">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">販売会社管理</h2>
+                    <p class="dashboard-card-description">販売会社の登録、編集、削除が可能です</p>
+                </a>
+
+                <!-- 主催者管理 -->
+                <a href="/organizers-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon purple">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">主催者管理</h2>
+                    <p class="dashboard-card-description">主催者の登録、編集、削除が可能です</p>
+                </a>
+
+                <!-- 共有在庫プール -->
+                <a href="/shared-stock-pools-list.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon orange">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">共有在庫プール</h2>
+                    <p class="dashboard-card-description">複数商品で共有する在庫プールの管理が可能です</p>
+                </a>
+
+                <!-- 一括メール送信 -->
+                <a href="/admin-bulk-emails.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon blue">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">一括メール送信</h2>
+                    <p class="dashboard-card-description">予約者に一括でメールを送信できます</p>
+                </a>
+
+                <!-- 一括メッセージ送信 -->
+                <a href="/admin-bulk-messages.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon teal">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">一括メッセージ送信</h2>
+                    <p class="dashboard-card-description">予約者に一括でメッセージを送信できます</p>
+                </a>
+
+                <!-- 一括書類送信 -->
+                <a href="/admin-bulk-documents.html" class="dashboard-card" data-roles="system_admin,admin,branch">
+                    <div class="dashboard-card-icon indigo">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h2 class="dashboard-card-title">一括書類送信</h2>
+                    <p class="dashboard-card-description">予約者に一括で書類を送信できます</p>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ロール別表示制御（セッションチェック完了後に実行）
+        function applyRoleBasedDisplay() {
+            const currentUserRole = window.currentAdminUser?.role;
+            
+            if (!currentUserRole) {
+                console.warn('ユーザーロールが取得できません');
+                return;
+            }
+            
+            console.log('現在のユーザーロール:', currentUserRole);
+            
+            const cards = document.querySelectorAll('.dashboard-card[data-roles]');
+            
+            cards.forEach(card => {
+                const allowedRoles = card.dataset.roles.split(',');
+                if (!allowedRoles.includes(currentUserRole)) {
+                    card.style.display = 'none';
+                    console.log('非表示:', card.querySelector('.dashboard-card-title')?.textContent);
+                } else {
+                    console.log('表示:', card.querySelector('.dashboard-card-title')?.textContent);
+                }
+            });
+        }
+        
+        // セッションチェック完了を待つ
+        document.addEventListener('adminAuthReady', function(e) {
+            console.log('adminAuthReady イベント受信:', e.detail.user);
+            applyRoleBasedDisplay();
+        });
+        
+        // フォールバック: DOMContentLoaded 時にも実行（既にセッション情報がある場合）
+        document.addEventListener('DOMContentLoaded', function() {
+            // 少し待ってから実行
+            setTimeout(() => {
+                if (window.currentAdminUser) {
+                    applyRoleBasedDisplay();
+                }
+            }, 100);
+        });
+        
+        // ログアウト処理
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            if (confirm('ログアウトしますか？')) {
+                // admin-auth.jsのログアウト関数を使用
+                if (window.adminAuth) {
+                    await window.adminAuth.logout();
+                } else {
+                    console.error('adminAuth が読み込まれていません');
+                    alert('ログアウト処理に失敗しました');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>参加者情報入力 | イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        /* パンくずナビゲーション */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .breadcrumb-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .breadcrumb-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: #e5e7eb;
+            color: #9ca3af;
+            transition: all 0.3s;
+        }
+        .breadcrumb-step.active .breadcrumb-number {
+            background: #6366f1;
+            color: white;
+        }
+        .breadcrumb-step.completed .breadcrumb-number {
+            background: #10b981;
+            color: white;
+        }
+        .breadcrumb-label {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+        .breadcrumb-step.active .breadcrumb-label {
+            color: #6366f1;
+            font-weight: 600;
+        }
+        .breadcrumb-step.completed .breadcrumb-label {
+            color: #10b981;
+        }
+        .breadcrumb-arrow {
+            color: #d1d5db;
+            margin: 0 15px;
+            font-size: 0.9rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #6366f1;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        /* グリッドレイアウト内のform-groupは margin-bottom を削除（!important で確実に適用） */
+        [style*="display: grid"] > .form-group,
+        [style*="display: grid"] .form-group {
+            margin-bottom: 0 !important;
+        }
+        /* 専用のグリッドコンテナクラス */
+        .custom-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .custom-fields-grid .form-group {
+            margin-bottom: 0 !important;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .form-group input:disabled {
+            background: #f3f4f6;
+            cursor: not-allowed;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .participant-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .participant-card .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #6366f1;
+            margin-bottom: 15px;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .info {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .booking-summary {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .booking-summary .title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        .booking-summary .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.9rem;
+        }
+        .booking-summary .total {
+            border-top: 2px solid #fbbf24;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        button.primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        button.secondary {
+            background: #f3f4f6;
+            color: #666;
+        }
+        button.secondary:hover:not(:disabled) {
+            background: #e5e7eb;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+        
+        /* v-cloak: Vue読み込み前のコンテンツを非表示 */
+        [v-cloak] {
+            display: none !important;
+        }
+        
+        /* 初期ローディング表示 */
+        #loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+        }
+        
+        /* エラー表示スタイル */
+        .form-group input.error,
+        .form-group select.error,
+        .form-group textarea.error {
+            border: 2px solid #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-group .checkbox-group.error {
+            border-left: 3px solid #ef4444;
+            padding-left: 10px;
+        }
+        
+        /* 同意セクション */
+        .consent-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .consent-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .consent-block {
+            margin-bottom: 2rem;
+        }
+        
+        .consent-block:last-child {
+            margin-bottom: 0;
+        }
+        
+        .consent-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+        
+        .consent-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        .consent-content h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem;
+            color: #2d3748;
+        }
+        
+        .consent-content h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 1.2rem 0 0.8rem;
+            color: #4a5568;
+        }
+        
+        .consent-content ul, .consent-content ol {
+            margin: 0.8rem 0;
+            padding-left: 2rem;
+        }
+        
+        .consent-content li {
+            margin: 0.5rem 0;
+        }
+        
+        .consent-content a {
+            color: #3182ce;
+            text-decoration: underline;
+        }
+        
+        .consent-content p {
+            margin: 0.8rem 0;
+        }
+        
+        .consent-checkboxes {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .consent-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .consent-checkbox:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+        
+        .consent-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 0.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .consent-checkbox-label {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #2d3748;
+            cursor: pointer;
+        }
+        
+        .consent-required {
+            color: #e53e3e;
+            margin-left: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Vue読み込み前のローディング表示 -->
+    <div id="loading-screen">
+        <div style="text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: #0369a1;"></i>
+            <p style="margin-top: 1rem; color: #666;">認証情報を確認しています...</p>
+        </div>
+    </div>
+    
+    <div id="app" v-cloak>
+        <!-- 認証チェック中のローディング表示 -->
+        <div v-if="isAuthChecking" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+            <div style="text-align: center;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: #0369a1;"></i>
+                <p style="margin-top: 1rem; color: #666;">認証情報を確認しています...</p>
+            </div>
+        </div>
+        
+        <!-- メインコンテンツ（認証チェック完了後に表示） -->
+        <div v-else class="container">
+            <!-- パンくずナビゲーション -->
+            <div class="breadcrumb">
+                <div class="breadcrumb-step completed">
+                    <div class="breadcrumb-number"><i class="fas fa-check"></i></div>
+                    <span class="breadcrumb-label">商品選択</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step completed">
+                    <div class="breadcrumb-number"><i class="fas fa-check"></i></div>
+                    <span class="breadcrumb-label">メール認証</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step active">
+                    <div class="breadcrumb-number">3</div>
+                    <span class="breadcrumb-label">参加者情報</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step">
+                    <div class="breadcrumb-number">4</div>
+                    <span class="breadcrumb-label">決済方法</span>
+                </div>
+                <div class="breadcrumb-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="breadcrumb-step">
+                    <div class="breadcrumb-number">5</div>
+                    <span class="breadcrumb-label">予約完了</span>
+                </div>
+            </div>
+            
+            <!-- ヘッダー -->
+            <div class="header">
+                <h1><i class="fas fa-users"></i> 参加者情報入力</h1>
+                <p class="subtitle">予約内容と参加者の情報を入力してください</p>
+            </div>
+
+            <div class="error" v-if="errorMessage">{{ errorMessage }}</div>
+            
+            <!-- 予約サマリー -->
+            <div class="booking-summary" v-if="bookingDraft">
+                <div class="title"><i class="fas fa-shopping-cart"></i> 予約内容</div>
+                <div class="item">
+                    <span>イベント</span>
+                    <span>{{ bookingDraft.event_name }}</span>
+                </div>
+                <div class="item">
+                    <span>参加日</span>
+                    <span>{{ bookingDraft.participation_date }}</span>
+                </div>
+                <div class="item" v-for="item in bookingDraft.items" :key="item.id + item.category">
+                    <span>{{ item.name }} ({{ item.category }})</span>
+                    <span>{{ item.quantity }}名 × ¥{{ item.unit_price.toLocaleString() }}</span>
+                </div>
+                <div class="item total">
+                    <span>合計金額</span>
+                    <span>¥{{ bookingDraft.total_amount.toLocaleString() }}</span>
+                </div>
+            </div>
+
+            <!-- 会員情報 -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-user"></i>
+                    会員情報
+                </div>
+                
+                <div class="info" v-if="isExistingMember">
+                    <i class="fas fa-info-circle"></i> 会員情報から自動入力されています。氏名・カナ・メールアドレスは変更できません。
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>姓<span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            v-model="booker.family_name" 
+                            placeholder="山田" 
+                            :disabled="isExistingMember"
+                            :class="{ 'error': errors['booker.family_name'] }"
+                            @blur="validateField('booker.family_name')"
+                            ref="booker_family_name"
+                        >
+                        <small v-if="errors['booker.family_name']" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors['booker.family_name'] }}
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label>名<span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            v-model="booker.first_name" 
+                            placeholder="太郎" 
+                            :disabled="isExistingMember"
+                            :class="{ 'error': errors['booker.first_name'] }"
+                            @blur="validateField('booker.first_name')"
+                            ref="booker_first_name"
+                        >
+                        <small v-if="errors['booker.first_name']" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors['booker.first_name'] }}
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>姓（カナ）<span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            v-model="booker.family_kana" 
+                            placeholder="ヤマダ" 
+                            :disabled="isExistingMember"
+                            :class="{ 'error': errors['booker.family_kana'] }"
+                            @blur="console.log('[BLUR EVENT] family_kana'); validateField('booker.family_kana')"
+                            ref="booker_family_kana"
+                        >
+                        <small v-if="errors['booker.family_kana']" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors['booker.family_kana'] }}
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label>名（カナ）<span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            v-model="booker.first_kana" 
+                            placeholder="タロウ" 
+                            :disabled="isExistingMember"
+                            :class="{ 'error': errors['booker.first_kana'] }"
+                            @blur="console.log('[BLUR EVENT] first_kana'); validateField('booker.first_kana')"
+                            ref="booker_first_kana"
+                        >
+                        <small v-if="errors['booker.first_kana']" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors['booker.first_kana'] }}
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>メールアドレス<span class="required">*</span></label>
+                    <input 
+                        type="email" 
+                        v-model="booker.email" 
+                        :disabled="isExistingMember" 
+                        @blur="checkEmailDuplicate(); validateField('booker.email');"
+                        :class="{ 'error': errors['booker.email'] || emailError }"
+                        ref="booker_email"
+                    >
+                    <small v-if="emailError" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> {{ emailError }}
+                    </small>
+                    <small v-else-if="errors['booker.email']" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors['booker.email'] }}
+                    </small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>電話番号<span class="required">*</span></label>
+                        <input 
+                            type="tel" 
+                            v-model="booker.tel" 
+                            placeholder="03-1234-5678"
+                            :class="{ 'error': errors['booker.tel'] }"
+                            @blur="validateField('booker.tel')"
+                            ref="booker_tel"
+                        >
+                        <small v-if="errors['booker.tel']" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors['booker.tel'] }}
+                        </small>
+                        <small v-else-if="isExistingMember" style="color: #666; font-size: 0.85rem;">
+                            ※ 電話番号は編集可能です
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label>携帯電話</label>
+                        <input 
+                            type="tel" 
+                            v-model="booker.mobile" 
+                            placeholder="090-1234-5678"
+                            :class="{ 'error': errors['booker.mobile'] }"
+                            @blur="validateField('booker.mobile')"
+                            ref="booker_mobile"
+                        >
+                        <small v-if="errors['booker.mobile']" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors['booker.mobile'] }}
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group" v-if="!isExistingMember">
+                    <label>郵便番号</label>
+                    <input type="text" v-model="booker.zip" placeholder="1000001" maxlength="7">
+                </div>
+
+                <div class="form-group" v-if="!isExistingMember">
+                    <label>住所</label>
+                    <input type="text" v-model="booker.addr" placeholder="東京都千代田区千代田1-1">
+                </div>
+            </div>
+
+            <!-- 参加者情報 -->
+            <div class="section" v-if="requireParticipantInfo">
+                <div class="section-title">参加者情報</div>
+                
+                <div class="info" style="margin-bottom: 20px;">
+                    <i class="fas fa-info-circle"></i> 参加者情報はマイページでも入力できます。このページでは必須項目ではありませんので、後から入力することも可能です。
+                </div>
+                
+                <!-- 会員が参加するチェックボックス -->
+                <div class="form-group" style="margin-bottom: 20px; background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #d0e4ff;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: 500; color: #333;">
+                        <input type="checkbox" v-model="memberParticipates" @change="toggleMemberParticipation" style="width: auto; margin-right: 10px;">
+                        会員が参加する（1番目の参加者に会員情報を自動入力）
+                    </label>
+                </div>
+                
+                <div class="participant-card" v-for="(participant, index) in participants.filter(p => p.item_type !== 'option')" :key="index">
+                    <div class="card-title">参加者{{ index + 1 }} - {{ participant.item_name }} ({{ participant.category }})</div>
+                    
+                    <!-- 氏名（漢字） -->
+                    <div class="form-row" v-if="shouldShowField(participant, 'lastname_kanji') || shouldShowField(participant, 'firstname_kanji')">
+                        <div class="form-group" v-if="shouldShowField(participant, 'lastname_kanji')">
+                            <label>姓</label>
+                            <input type="text" 
+                                   v-model="participant.family_name" 
+                                   placeholder="山田"
+                                   @blur="validateField(`participants[${index}].family_name`)">
+                            <small v-if="errors[`participants[${index}].family_name`]" class="error-message">
+                                {{ errors[`participants[${index}].family_name`] }}
+                            </small>
+                        </div>
+                        <div class="form-group" v-if="shouldShowField(participant, 'firstname_kanji')">
+                            <label>名</label>
+                            <input type="text" 
+                                   v-model="participant.first_name" 
+                                   placeholder="太郎"
+                                   @blur="validateField(`participants[${index}].first_name`)">
+                            <small v-if="errors[`participants[${index}].first_name`]" class="error-message">
+                                {{ errors[`participants[${index}].first_name`] }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- 氏名（カナ） -->
+                    <div class="form-row" v-if="shouldShowField(participant, 'lastname_kana') || shouldShowField(participant, 'firstname_kana')">
+                        <div class="form-group" v-if="shouldShowField(participant, 'lastname_kana')">
+                            <label>姓（カナ）</label>
+                            <input type="text" 
+                                   v-model="participant.family_kana" 
+                                   placeholder="ヤマダ"
+                                   @blur="validateField(`participants[${index}].family_kana`)">
+                            <small v-if="errors[`participants[${index}].family_kana`]" class="error-message">
+                                {{ errors[`participants[${index}].family_kana`] }}
+                            </small>
+                        </div>
+                        <div class="form-group" v-if="shouldShowField(participant, 'firstname_kana')">
+                            <label>名（カナ）</label>
+                            <input type="text" 
+                                   v-model="participant.first_kana" 
+                                   placeholder="タロウ"
+                                   @blur="validateField(`participants[${index}].first_kana`)">
+                            <small v-if="errors[`participants[${index}].first_kana`]" class="error-message">
+                                {{ errors[`participants[${index}].first_kana`] }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- 氏名（ローマ字） -->
+                    <div class="form-row" v-if="shouldShowField(participant, 'lastname_roman') || shouldShowField(participant, 'firstname_roman')">
+                        <div class="form-group" v-if="shouldShowField(participant, 'lastname_roman')">
+                            <label>Last Name</label>
+                            <input type="text" v-model="participant.last_name_en" placeholder="Yamada">
+                        </div>
+                        <div class="form-group" v-if="shouldShowField(participant, 'firstname_roman')">
+                            <label>First Name</label>
+                            <input type="text" v-model="participant.first_name_en" placeholder="Taro">
+                        </div>
+                    </div>
+
+                    <!-- 年齢・性別 -->
+                    <div class="form-row">
+                        <div class="form-group" v-if="shouldShowField(participant, 'age')">
+                            <label>年齢</label>
+                            <input type="number" 
+                                   v-model.number="participant.age" 
+                                   placeholder="35" 
+                                   min="0" 
+                                   max="150"
+                                   @blur="validateField(`participants[${index}].age`)">
+                            <small v-if="errors[`participants[${index}].age`]" class="error-message">
+                                {{ errors[`participants[${index}].age`] }}
+                            </small>
+                        </div>
+                        <div class="form-group" v-if="shouldShowField(participant, 'gender')">
+                            <label>性別</label>
+                            <select v-model="participant.sex"
+                                    @blur="validateField(`participants[${index}].sex`)">
+                                <option value="">選択してください</option>
+                                <option value="1">男性</option>
+                                <option value="2">女性</option>
+                                <option value="9">その他</option>
+                            </select>
+                            <small v-if="errors[`participants[${index}].sex`]" class="error-message">
+                                {{ errors[`participants[${index}].sex`] }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- 生年月日 -->
+                    <div class="form-group" v-if="shouldShowField(participant, 'birth_date')">
+                        <label>生年月日</label>
+                        <input type="date" v-model="participant.birth_date">
+                    </div>
+
+                    <!-- 電話番号 -->
+                    <div class="form-group" v-if="shouldShowField(participant, 'phone')">
+                        <label>電話番号</label>
+                        <input type="tel" 
+                               v-model="participant.tel" 
+                               placeholder="090-1234-5678"
+                               @blur="validateField(`participants[${index}].tel`)">
+                        <small v-if="errors[`participants[${index}].tel`]" class="error-message">
+                            {{ errors[`participants[${index}].tel`] }}
+                        </small>
+                    </div>
+
+                    <!-- メールアドレス -->
+                    <div class="form-group" v-if="shouldShowField(participant, 'email')">
+                        <label>メールアドレス</label>
+                        <input type="email" 
+                               v-model="participant.email" 
+                               placeholder="example@example.com"
+                               @blur="validateField(`participants[${index}].email`)">
+                        <small v-if="errors[`participants[${index}].email`]" class="error-message">
+                            {{ errors[`participants[${index}].email`] }}
+                        </small>
+                    </div>
+
+                    <!-- 住所 -->
+                    <div class="form-group" v-if="shouldShowField(participant, 'address')">
+                        <label>住所</label>
+                        <input type="text" v-model="participant.addr" placeholder="東京都千代田区千代田1-1">
+                    </div>
+                    
+                    <!-- 参加者別カスタムフィールド（category=2） -->
+                    <template v-if="participant.item_type === 'product'">
+                        <!-- カスタムフィールドをグリッドレイアウトで表示 -->
+                        <div class="custom-fields-grid">
+                            <!-- 全フィールドを display_order 順に表示 -->
+                            <template v-for="field in getParticipantCustomFields(participant.item_id)" :key="field.id">
+                                <div class="form-group" 
+                                     v-show="shouldShowCustomField(participant, field)"
+                                     :style="{ 
+                                         marginLeft: (field.indent_level * 20) + 'px',
+                                         gridColumn: (field.field_type === 'textarea') ? '1 / -1' : 'auto'
+                                     }">
+                                    <label>
+                                        {{ field.field_label }}
+                                        <span class="required" v-if="field.is_required">*</span>
+                                    </label>
+                                    
+                                    <!-- テキスト -->
+                                    <input v-if="field.field_type === 'text'"
+                                           type="text" 
+                                           v-model="participant.custom_fields[field.field_name]"
+                                           :placeholder="field.placeholder || ''">
+                                    
+                                    <!-- セレクト -->
+                                    <select v-if="field.field_type === 'select'"
+                                            v-model="participant.custom_fields[field.field_name]">
+                                        <option value="">選択してください</option>
+                                        <option v-for="option in field.field_options" :key="option" :value="option">
+                                            {{ option }}
+                                        </option>
+                                    </select>
+                                    
+                                    <!-- テキストエリア -->
+                                    <textarea v-if="field.field_type === 'textarea'"
+                                              v-model="participant.custom_fields[field.field_name]"
+                                              :placeholder="field.placeholder || ''"
+                                              rows="3"></textarea>
+                                    
+                                    <!-- ラジオボタン -->
+                                    <div v-if="field.field_type === 'radio'">
+                                        <div v-for="option in field.field_options" :key="option" style="margin: 8px 0;">
+                                            <label style="font-weight: normal; display: flex; align-items: center;">
+                                                <input type="radio" 
+                                                       :name="'participant_' + index + '_radio_' + field.id"
+                                                       :value="option"
+                                                       v-model="participant.custom_fields[field.field_name]"
+                                                       style="width: auto; margin-right: 8px;">
+                                                {{ option }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- チェックボックス -->
+                                    <div v-if="field.field_type === 'checkbox'">
+                                        <div v-for="option in field.field_options" :key="option" style="margin: 8px 0;">
+                                            <label style="font-weight: normal; display: flex; align-items: center;">
+                                                <input type="checkbox" 
+                                                       :value="option"
+                                                       v-model="participant.custom_fields[field.field_name]"
+                                                       style="width: auto; margin-right: 8px;">
+                                                {{ option }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 説明文 -->
+                                    <small v-if="field.description" style="color: #666; font-size: 0.85rem;">
+                                        {{ field.description }}
+                                    </small>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- 商品全体のカスタムフィールド（category=1） -->
+            <template v-for="(item, itemIndex) in getUniqueProducts()" :key="'product_' + (item ? item.id : itemIndex)">
+                <div class="section" v-if="item && item.id && getProductCustomFields(item.id).length > 0">
+                    <div class="section-title">{{ item.name }} - 追加情報</div>
+                
+                <!-- カスタムフィールドをグリッドレイアウトで表示 -->
+                <div class="custom-fields-grid" style="gap: 20px;">
+                    <!-- 全フィールドを display_order 順に表示 -->
+                    <template v-for="field in getProductCustomFields(item.id)" :key="field.id">
+                        <div class="form-group"
+                             v-show="shouldShowProductCustomField(item.id, field)"
+                             :style="{ 
+                                 marginLeft: (field.indent_level * 20) + 'px',
+                                 gridColumn: (field.field_type === 'textarea') ? '1 / -1' : 'auto'
+                             }">
+                            <label>
+                                {{ field.field_label }}
+                                <span class="required" v-if="field.is_required">*</span>
+                            </label>
+                            
+                            <!-- テキスト -->
+                            <input v-if="field.field_type === 'text'"
+                                   type="text" 
+                                   :value="productFieldAnswers[item.id] && productFieldAnswers[item.id][field.field_name]"
+                                   @input="setProductFieldAnswer(item.id, field.field_name, $event.target.value)"
+                                   :placeholder="field.placeholder || ''">
+                            
+                            <!-- セレクト -->
+                            <select v-if="field.field_type === 'select'"
+                                    :value="productFieldAnswers[item.id] && productFieldAnswers[item.id][field.field_name]"
+                                    @change="setProductFieldAnswer(item.id, field.field_name, $event.target.value)">
+                                <option value="">選択してください</option>
+                                <option v-for="option in field.field_options" :key="option" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
+                            
+                            <!-- テキストエリア -->
+                            <textarea v-if="field.field_type === 'textarea'"
+                                      :value="productFieldAnswers[item.id] && productFieldAnswers[item.id][field.field_name]"
+                                      @input="setProductFieldAnswer(item.id, field.field_name, $event.target.value)"
+                                      :placeholder="field.placeholder || ''"
+                                      rows="4"></textarea>
+                            
+                            <!-- ラジオボタン -->
+                            <div v-if="field.field_type === 'radio'">
+                                <div v-for="option in field.field_options" :key="option" style="margin: 8px 0;">
+                                    <label style="font-weight: normal; display: flex; align-items: center;">
+                                        <input type="radio" 
+                                               :name="'product_' + item.id + '_' + field.field_name"
+                                               :value="option"
+                                               :checked="productFieldAnswers[item.id] && productFieldAnswers[item.id][field.field_name] === option"
+                                               @change="setProductFieldAnswer(item.id, field.field_name, option)"
+                                               style="width: auto; margin-right: 8px;">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- チェックボックス -->
+                            <div v-if="field.field_type === 'checkbox'">
+                                <div v-for="option in field.field_options" :key="option" style="margin: 8px 0;">
+                                    <label style="font-weight: normal; display: flex; align-items: center;">
+                                        <input type="checkbox" 
+                                               :value="option"
+                                               :checked="productFieldAnswers[item.id] && productFieldAnswers[item.id][field.field_name] && productFieldAnswers[item.id][field.field_name].includes(option)"
+                                               @change="toggleCheckbox(item.id, field.field_name, option)"
+                                               style="width: auto; margin-right: 8px;">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- 説明文 -->
+                            <small v-if="field.description" style="color: #666; font-size: 0.85rem;">
+                                {{ field.description }}
+                            </small>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            </template>
+
+            <!-- 同意事項 -->
+            <div class="section">
+                
+                <!-- 会員規約（新規会員のみ） -->
+                <div class="form-group" v-if="!isExistingMember">
+                    <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" 
+                               v-model="agreedToTerms" 
+                               style="width: auto; margin-right: 10px;"
+                               ref="agreedToTerms">
+                        <a href="/terms" target="_blank" style="color: #6366f1; text-decoration: none;">
+                            会員規約
+                        </a>
+                        <span style="margin-left: 5px;">に同意する</span>
+                        <span class="required" style="margin-left: 5px;">*</span>
+                    </label>
+                    <small v-if="errors['agreedToTerms']" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors['agreedToTerms'] }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- 同意セクション -->
+            <div v-if="consent" class="consent-section">
+                <h3 class="consent-section-title">
+                    <i class="fas fa-file-signature"></i>
+                    個人情報・取引条件の同意
+                </h3>
+                
+                <!-- 個人情報の取り扱い -->
+                <div v-if="consent.privacy_policy_enabled" class="consent-block">
+                    <h4 class="consent-title">
+                        {{ consent.privacy_policy_title }}
+                        <span v-if="consent.privacy_policy_required" class="consent-required">*</span>
+                    </h4>
+                    <div class="consent-content" v-html="renderMarkdown(consent.privacy_policy_content)"></div>
+                </div>
+                
+                <!-- 旅行条件について -->
+                <div v-if="consent.terms_enabled" class="consent-block">
+                    <h4 class="consent-title">
+                        {{ consent.terms_title }}
+                        <span v-if="consent.terms_required" class="consent-required">*</span>
+                    </h4>
+                    <div class="consent-content" v-html="renderMarkdown(consent.terms_content)"></div>
+                </div>
+                
+                <!-- チェックボックス（1つの枠内） -->
+                <div class="consent-checkboxes">
+                    <label v-if="consent.privacy_policy_enabled" class="consent-checkbox">
+                        <input 
+                            type="checkbox" 
+                            v-model="privacyPolicyAgreed"
+                            :required="consent.privacy_policy_required"
+                        />
+                        <span class="consent-checkbox-label">
+                            {{ consent.privacy_policy_consent_text }}
+                            <span v-if="consent.privacy_policy_required" class="consent-required">*</span>
+                        </span>
+                    </label>
+                    <label v-if="consent.terms_enabled" class="consent-checkbox">
+                        <input 
+                            type="checkbox" 
+                            v-model="termsAgreed"
+                            :required="consent.terms_required"
+                        />
+                        <span class="consent-checkbox-label">
+                            {{ consent.terms_consent_text }}
+                            <span v-if="consent.terms_required" class="consent-required">*</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ボタン -->
+            <div class="button-group">
+                <button class="secondary" @click="goBack">
+                    <i class="fas fa-arrow-left"></i> 戻る
+                </button>
+                <button class="primary" @click="proceedToPayment" :disabled="isLoading">
+                    {{ isLoading ? '処理中...' : '決済方法選択へ進む' }}
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    errorMessage: '',
+                    emailError: '',  // メールアドレスエラーメッセージ
+                    isLoading: false,
+                    isAuthChecking: true,  // 認証チェック中フラグ
+                    isExistingMember: false,
+                    bookingDraft: null,
+                    memberParticipates: false,  // 会員が参加するフラグ
+                    requireParticipantInfo: 1,  // 参加者情報入力フラグ（デフォルトは表示）
+                    
+                    // フィールドごとのエラーメッセージ
+                    errors: {},
+                    
+                    // 同意フラグ
+                    agreedToPrivacy: false,  // 個人情報の取り扱い
+                    agreedToTerms: false,    // 会員規約（新規会員のみ）
+                    
+                    // 同意設定データ
+                    consent: null,
+                    privacyPolicyAgreed: false,
+                    termsAgreed: false,
+                    
+                    // 商品ごとのフォーム設定
+                    productFormSettings: {},  // { product_id: { lastname_kanji: true, ... } }
+                    productCustomFields: {},  // { product_id: [ { id, field_type, field_label, ... } ] }
+                    
+                    // 予約者情報
+                    booker: {
+                        email: '',
+                        family_name: '',
+                        first_name: '',
+                        family_kana: '',
+                        first_kana: '',
+                        tel: '',
+                        mobile: '',
+                        zip: '',
+                        addr: ''
+                    },
+                    
+                    // 参加者情報の配列
+                    participants: [],
+                    
+                    // 商品全体のカスタムフィールド回答（category=1）
+                    productFieldAnswers: {}  // { product_id: { field_name: value } }
+                };
+            },
+            
+            methods: {
+                // セッション情報取得
+                async loadSession() {
+                    // OTPスキップモード（新規会員）のチェック
+                    const skipOTP = localStorage.getItem('skipOTP');
+                    if (skipOTP === 'true') {
+                        // 新規会員モード
+                        this.isExistingMember = false;
+                        localStorage.removeItem('skipOTP'); // フラグをクリア
+                        this.isAuthChecking = false;
+                        return;
+                    }
+                    
+                    try {
+                        const response = await axios.get('/api/auth/session');
+                        
+                        if (response.data.authenticated) {
+                            this.isExistingMember = response.data.is_existing_member;
+                            
+                            if (response.data.member) {
+                                // 既存会員の情報を自動入力
+                                const member = response.data.member;
+                                this.booker.email = member.email;
+                                this.booker.family_name = member.family_name || '';
+                                this.booker.first_name = member.first_name || '';
+                                this.booker.family_kana = member.family_kana || '';
+                                this.booker.first_kana = member.first_kana || '';
+                                this.booker.tel = member.tel || '';
+                                this.booker.mobile = member.mobile || '';
+                                this.booker.zip = member.zip || '';
+                                this.booker.addr = member.addr || '';
+                            } else {
+                                // 新規会員：メールアドレスのみ設定
+                                this.booker.email = response.data.email;
+                            }
+                            this.isAuthChecking = false;
+                        } else {
+                            // 未認証の場合は認証ページへ（リダイレクトするのでフラグ更新不要）
+                            window.location.href = '/auth-email';
+                        }
+                        
+                    } catch (error) {
+                        console.error('Session load failed:', error);
+                        // エラーの場合も認証ページへ（リダイレクトするのでフラグ更新不要）
+                        window.location.href = '/auth-email';
+                    }
+                },
+                
+                // メールアドレス重複チェック（新規会員のみ）
+                async checkEmailDuplicate() {
+                    // 既存会員の場合はチェック不要
+                    if (this.isExistingMember) {
+                        this.emailError = '';
+                        return;
+                    }
+                    
+                    // メールアドレスが空の場合
+                    if (!this.booker.email) {
+                        this.emailError = '';
+                        return;
+                    }
+                    
+                    // メールアドレス形式チェック
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(this.booker.email)) {
+                        this.emailError = 'メールアドレスの形式が正しくありません';
+                        return;
+                    }
+                    
+                    try {
+                        // メールアドレスの重複チェックAPI呼び出し
+                        const response = await axios.get(`/api/members/check-email?email=${encodeURIComponent(this.booker.email)}`);
+                        
+                        if (response.data.exists) {
+                            this.emailError = 'このメールアドレスは既に登録されています。ログインしてください。';
+                        } else {
+                            this.emailError = '';
+                        }
+                    } catch (error) {
+                        console.error('Email check failed:', error);
+                        // エラー時はチェックをスキップ（ユーザー体験を損なわないため）
+                        this.emailError = '';
+                    }
+                },
+                
+                // 予約データ読み込み
+                async loadBookingDraft() {
+                    const draft = localStorage.getItem('bookingDraft');
+                    if (!draft) {
+                        alert('予約情報がありません。商品選択画面へ戻ります。');
+                        window.location.href = '/product-detail';
+                        return;
+                    }
+                    
+                    this.bookingDraft = JSON.parse(draft);
+                    
+                    // 商品のフォーム設定を取得
+                    await this.loadProductFormSettings();
+                    
+                    // 参加者フォームを生成
+                    this.generateParticipantForms();
+                },
+                
+                // 商品のフォーム設定を取得
+                async loadProductFormSettings() {
+                    // 商品IDのユニークリストを作成
+                    const productIds = [...new Set(
+                        this.bookingDraft.items
+                            .filter(item => item && item.type === 'product' && item.id)
+                            .map(item => item.id)
+                    )];
+                    
+                    // 各商品のフォーム設定を取得
+                    for (const productId of productIds) {
+                        try {
+                            const response = await axios.get(`/api/auth/product-form-settings/${productId}`);
+                            this.productFormSettings[productId] = response.data.form_settings;
+                            this.productCustomFields[productId] = response.data.custom_fields || [];
+                            
+                            // 商品全体フィールド（category=1）の回答用オブジェクト初期化
+                            this.productFieldAnswers[productId] = {};
+                            
+                        } catch (error) {
+                            console.error(`Failed to load form settings for product ${productId}:`, error);
+                            // デフォルト設定（全て表示）
+                            this.productFormSettings[productId] = {
+                                lastname_kanji: true,
+                                firstname_kanji: true,
+                                lastname_kana: true,
+                                firstname_kana: true,
+                                age: true,
+                                gender: true
+                            };
+                            this.productCustomFields[productId] = [];
+                            this.productFieldAnswers[productId] = {};
+                        }
+                    }
+                },
+                
+                // 参加者フォーム生成
+                generateParticipantForms() {
+                    this.participants = [];
+                    
+                    this.bookingDraft.items.forEach(item => {
+                        // item が undefined または必須プロパティがない場合はスキップ
+                        if (!item || !item.id || !item.type || !item.quantity) {
+                            console.warn('Invalid item in bookingDraft:', item);
+                            return;
+                        }
+                        
+                        for (let i = 0; i < item.quantity; i++) {
+                            this.participants.push({
+                                item_type: item.type,
+                                item_id: item.id,
+                                item_name: item.name || '',
+                                category: item.category || '',
+                                price_category: item.category || '',  // バックエンドのキーマッピング用
+                                stock_id: item.stock_id || null,
+                                family_name: '',
+                                first_name: '',
+                                family_kana: '',
+                                first_kana: '',
+                                last_name_en: '',
+                                first_name_en: '',
+                                age: null,
+                                sex: '',
+                                birth_date: '',
+                                tel: '',
+                                email: '',
+                                addr: '',
+                                // 参加者別カスタムフィールド（category=2）
+                                custom_fields: {}
+                            });
+                        }
+                    });
+                },
+                
+                // フィールド表示判定
+                shouldShowField(participant, fieldName) {
+                    // オプションの場合はフォーム設定がないので基本情報のみ表示
+                    if (participant.item_type === 'option') {
+                        // オプションは基本情報のみ
+                        return ['lastname_kanji', 'firstname_kanji', 'lastname_kana', 'firstname_kana', 'age', 'gender'].includes(fieldName);
+                    }
+                    
+                    // 商品の場合はフォーム設定に従う
+                    const settings = this.productFormSettings[participant.item_id];
+                    if (!settings) {
+                        // 設定が取得できていない場合はデフォルトで表示
+                        return true;
+                    }
+                    
+                    // フィールド名のマッピング（2つのパターンに対応）
+                    // パターンA: name_kanji, name_kana, name_roma
+                    // パターンB: lastname_kanji, firstname_kanji, lastname_kana, firstname_kana, lastname_roman, firstname_roman
+                    
+                    if (fieldName === 'lastname_kanji' || fieldName === 'firstname_kanji') {
+                        // 姓名分離パターンをチェック
+                        if (settings[fieldName] !== undefined) {
+                            return settings[fieldName] === true;
+                        }
+                        // 姓名統合パターンをチェック
+                        return settings['name_kanji'] === true;
+                    }
+                    
+                    if (fieldName === 'lastname_kana' || fieldName === 'firstname_kana') {
+                        if (settings[fieldName] !== undefined) {
+                            return settings[fieldName] === true;
+                        }
+                        return settings['name_kana'] === true;
+                    }
+                    
+                    if (fieldName === 'lastname_roman' || fieldName === 'firstname_roman') {
+                        if (settings[fieldName] !== undefined) {
+                            return settings[fieldName] === true;
+                        }
+                        return settings['name_roma'] === true;
+                    }
+                    
+                    if (fieldName === 'phone') {
+                        return settings['tel'] === true;
+                    }
+                    
+                    return settings[fieldName] === true;
+                },
+                
+                // 参加者別カスタムフィールド取得（category=2）- display_order でソート
+                getParticipantCustomFields(productId) {
+                    const fields = this.productCustomFields[productId] || [];
+                    return fields
+                        .filter(f => f.category === 2)
+                        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+                },
+                
+                // 商品全体カスタムフィールド取得（category=1）- display_order でソート
+                getProductCustomFields(productId) {
+                    const fields = this.productCustomFields[productId] || [];
+                    return fields
+                        .filter(f => f.category === 1)
+                        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+                },
+                
+                // ユニーク商品リスト取得
+                getUniqueProducts() {
+                    if (!this.bookingDraft || !this.bookingDraft.items) return [];
+                    const seen = new Set();
+                    return this.bookingDraft.items
+                        .filter(item => item && item.type === 'product' && item.id) // item が存在し、id を持つことを確認
+                        .filter(item => {
+                            if (seen.has(item.id)) return false;
+                            seen.add(item.id);
+                            return true;
+                        });
+                },
+                
+                // カスタムフィールドの表示判定（条件分岐対応）
+                shouldShowCustomField(participant, field) {
+                    // 親フィールド条件チェック
+                    if (field.parent_field_id && field.parent_condition) {
+                        // 親フィールドを探す
+                        const parentField = this.getParticipantCustomFields(participant.item_id)
+                            .find(f => f.id === field.parent_field_id);
+                        
+                        if (parentField) {
+                            const parentValue = participant.custom_fields[parentField.field_name];
+                            // 親フィールドの値が条件と一致する場合のみ表示
+                            return parentValue === field.parent_condition;
+                        }
+                        return false;
+                    }
+                    return true;
+                },
+                
+                // 商品フィールド回答の安全な取得/設定用ヘルパー
+                getProductFieldAnswer(productId, fieldName) {
+                    if (!this.productFieldAnswers[productId]) {
+                        this.productFieldAnswers[productId] = {};
+                    }
+                    return this.productFieldAnswers[productId][fieldName];
+                },
+                
+                setProductFieldAnswer(productId, fieldName, value) {
+                    if (!this.productFieldAnswers[productId]) {
+                        this.productFieldAnswers[productId] = {};
+                    }
+                    this.productFieldAnswers[productId][fieldName] = value;
+                },
+                
+                // チェックボックスのトグル処理
+                toggleCheckbox(productId, fieldName, option) {
+                    if (!this.productFieldAnswers[productId]) {
+                        this.productFieldAnswers[productId] = {};
+                    }
+                    if (!this.productFieldAnswers[productId][fieldName]) {
+                        this.productFieldAnswers[productId][fieldName] = [];
+                    }
+                    
+                    const currentValue = this.productFieldAnswers[productId][fieldName];
+                    if (currentValue.includes(option)) {
+                        // 既に選択されている場合は削除
+                        this.productFieldAnswers[productId][fieldName] = currentValue.filter(v => v !== option);
+                    } else {
+                        // 選択されていない場合は追加
+                        this.productFieldAnswers[productId][fieldName] = [...currentValue, option];
+                    }
+                },
+                
+                // 商品カスタムフィールドの表示判定（条件分岐対応）
+                shouldShowProductCustomField(productId, field) {
+                    // 親フィールド条件チェック
+                    if (field.parent_field_id && field.parent_condition) {
+                        // 親フィールドを探す
+                        const parentField = this.getProductCustomFields(productId)
+                            .find(f => f.id === field.parent_field_id);
+                        
+                        if (parentField) {
+                            const parentValue = this.getProductFieldAnswer(productId, parentField.field_name);
+                            // 親フィールドの値が条件と一致する場合のみ表示
+                            return parentValue === field.parent_condition;
+                        }
+                        return false;
+                    }
+                    return true;
+                },
+                
+                // 個別フィールドのバリデーション
+                validateField(fieldPath) {
+                    // エラーをクリア（プロパティを削除）
+                    if (this.errors[fieldPath]) {
+                        delete this.errors[fieldPath];
+                    }
+                    
+                    const parts = fieldPath.split('.');
+                    
+                    // 予約者情報のバリデーション
+                    if (parts[0] === 'booker') {
+                        const field = parts[1];
+                        
+                        if (field === 'email') {
+                            if (!this.booker.email) {
+                                this.errors[fieldPath] = 'メールアドレスを入力してください';
+                            } else if (!this.isValidEmail(this.booker.email)) {
+                                this.errors[fieldPath] = 'メールアドレスの形式が正しくありません';
+                            }
+                        } else if (field === 'family_name') {
+                            if (!this.booker.family_name) {
+                                this.errors[fieldPath] = '姓を入力してください';
+                            }
+                        } else if (field === 'first_name') {
+                            if (!this.booker.first_name) {
+                                this.errors[fieldPath] = '名を入力してください';
+                            }
+                        } else if (field === 'family_kana') {
+                            if (!this.booker.family_kana) {
+                                this.errors[fieldPath] = '姓（カナ）を入力してください';
+                            } else if (!this.isKatakana(this.booker.family_kana)) {
+                                this.errors[fieldPath] = 'カタカナで入力してください';
+                            }
+                        } else if (field === 'first_kana') {
+                            if (!this.booker.first_kana) {
+                                this.errors[fieldPath] = '名（カナ）を入力してください';
+                            } else if (!this.isKatakana(this.booker.first_kana)) {
+                                this.errors[fieldPath] = 'カタカナで入力してください';
+                            }
+                        } else if (field === 'tel') {
+                            if (!this.booker.tel) {
+                                this.errors[fieldPath] = '電話番号を入力してください';
+                            } else if (!this.isValidPhone(this.booker.tel)) {
+                                this.errors[fieldPath] = '電話番号の形式が正しくありません（例: 03-1234-5678）';
+                            }
+                        } else if (field === 'mobile') {
+                            if (this.booker.mobile && !this.isValidPhone(this.booker.mobile)) {
+                                this.errors[fieldPath] = '携帯電話の形式が正しくありません';
+                            }
+                        } else if (field === 'zip') {
+                            if (!this.isExistingMember && this.booker.zip && !this.isValidZip(this.booker.zip)) {
+                                this.errors[fieldPath] = '郵便番号は7桁の数字で入力してください（例: 1000001）';
+                            }
+                        }
+                    }
+                    
+                    // 参加者情報のバリデーション (participants[0].field 形式)
+                    // 参加者情報は任意項目のため、入力がある場合のみ型チェックを実行
+                    if (parts[0].startsWith('participants[')) {
+                        const match = parts[0].match(/participants\[(\d+)\]/);
+                        if (!match) return;
+                        
+                        const index = parseInt(match[1]);
+                        const field = parts[1];
+                        const p = this.participants[index];
+                        
+                        if (!p) return;
+                        
+                        // 型チェックのみ: 入力がある場合のみ検証
+                        if (field === 'family_kana') {
+                            if (this.shouldShowField(p, 'lastname_kana') && p.family_kana && !this.isKatakana(p.family_kana)) {
+                                this.errors[fieldPath] = 'カタカナで入力してください';
+                            }
+                        } else if (field === 'first_kana') {
+                            if (this.shouldShowField(p, 'firstname_kana') && p.first_kana && !this.isKatakana(p.first_kana)) {
+                                this.errors[fieldPath] = 'カタカナで入力してください';
+                            }
+                        } else if (field === 'age') {
+                            if (this.shouldShowField(p, 'age') && (p.age || p.age === 0)) {
+                                if (p.age < 0 || p.age > 150) {
+                                    this.errors[fieldPath] = '0〜150の範囲で入力してください';
+                                }
+                            }
+                        } else if (field === 'tel') {
+                            if (this.shouldShowField(p, 'phone') && p.tel && !this.isValidPhone(p.tel)) {
+                                this.errors[fieldPath] = '電話番号の形式が正しくありません';
+                            }
+                        } else if (field === 'email') {
+                            if (this.shouldShowField(p, 'email') && p.email && !this.isValidEmail(p.email)) {
+                                this.errors[fieldPath] = 'メールアドレスの形式が正しくありません';
+                            }
+                        }
+                    }
+                    
+                    // Vue 3のリアクティブシステムをトリガー
+                    this.errors = { ...this.errors };
+                },
+                
+                // 全フィールドのバリデーション
+                validateAll() {
+                    // 全エラーをクリア
+                    this.errors = {};
+                    this.errorMessage = '';
+                    
+                    // メールアドレスエラーがある場合
+                    if (this.emailError) {
+                        this.errorMessage = 'メールアドレスのエラーを解決してください';
+                        this.focusFirstError();
+                        return false;
+                    }
+                    
+                    // 予約者情報のバリデーション
+                    this.validateField('booker.email');
+                    this.validateField('booker.family_name');
+                    this.validateField('booker.first_name');
+                    this.validateField('booker.family_kana');
+                    this.validateField('booker.first_kana');
+                    this.validateField('booker.tel');
+                    this.validateField('booker.mobile');
+                    this.validateField('booker.zip');
+                    
+                    // 参加者情報のバリデーション
+                    for (let i = 0; i < this.participants.length; i++) {
+                        const p = this.participants[i];
+                        
+                        // 基本情報のバリデーション
+                        this.validateField(`participants[${i}].family_name`);
+                        this.validateField(`participants[${i}].first_name`);
+                        this.validateField(`participants[${i}].family_kana`);
+                        this.validateField(`participants[${i}].first_kana`);
+                        this.validateField(`participants[${i}].age`);
+                        this.validateField(`participants[${i}].sex`);
+                        this.validateField(`participants[${i}].tel`);
+                        this.validateField(`participants[${i}].email`);
+                        
+                        // 参加者別カスタムフィールドのバリデーション
+                        if (p.item_type === 'product') {
+                            const participantFields = this.getParticipantCustomFields(p.item_id);
+                            for (const field of participantFields) {
+                                if (!this.shouldShowCustomField(p, field)) continue;
+                                
+                                if (field.is_required) {
+                                    const value = p.custom_fields[field.field_name];
+                                    if (!value || (Array.isArray(value) && value.length === 0)) {
+                                        this.errors[`participants[${i}].custom.${field.field_name}`] = `「${field.field_label}」を入力してください`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 商品全体カスタムフィールドのバリデーション
+                    const uniqueProducts = this.getUniqueProducts();
+                    for (const product of uniqueProducts) {
+                        const productFields = this.getProductCustomFields(product.id);
+                        for (const field of productFields) {
+                            if (!this.shouldShowProductCustomField(product.id, field)) continue;
+                            
+                            if (field.is_required) {
+                                const value = this.productFieldAnswers[product.id][field.field_name];
+                                if (!value || (Array.isArray(value) && value.length === 0)) {
+                                    this.errors[`product.${product.id}.${field.field_name}`] = `「${field.field_label}」を入力してください`;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!this.isExistingMember && !this.agreedToTerms) {
+                        this.errors['agreedToTerms'] = '会員規約に同意してください';
+                    }
+                    
+                    // エラーがあるか確認
+                    const hasError = Object.keys(this.errors).length > 0;
+                    
+                    if (hasError) {
+                        this.errorMessage = '入力内容に誤りがあります。エラーメッセージを確認してください。';
+                        this.focusFirstError();
+                        return false;
+                    }
+                    
+                    return true;
+                },
+                
+                // 最初のエラーフィールドにフォーカス
+                focusFirstError() {
+                    this.$nextTick(() => {
+                        // エラーメッセージが表示されている最初の要素を探す
+                        const errorElement = document.querySelector('.error-message');
+                        if (!errorElement) return;
+                        
+                        // エラーメッセージの親要素から入力フィールドを探す
+                        const formGroup = errorElement.closest('.form-group');
+                        if (!formGroup) return;
+                        
+                        // input, select, textareaを探す
+                        const inputElement = formGroup.querySelector('input, select, textarea');
+                        if (inputElement) {
+                            inputElement.focus();
+                            inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                },
+                
+                // バリデーション
+                validate() {
+                    // 新しいバリデーションシステムを使用
+                    return this.validateAll();
+                },
+                
+                // バリデーションヘルパー関数
+                isKatakana(str) {
+                    // カタカナ・全角スペース・中黒（・）のみ許可
+                    return /^[ァ-ヶー\s・]+$/.test(str);
+                },
+                
+                isValidEmail(email) {
+                    // 基本的なメールアドレス形式チェック
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                },
+                
+                isValidPhone(phone) {
+                    // ハイフンあり/なしの電話番号（固定電話・携帯電話）
+                    // 例: 03-1234-5678, 090-1234-5678, 0312345678, 09012345678
+                    return /^(0\d{1,4}-?\d{1,4}-?\d{4}|0\d{9,10})$/.test(phone.replace(/\s/g, ''));
+                },
+                
+                isValidZip(zip) {
+                    // 7桁の数字（ハイフンなし）
+                    return /^\d{7}$/.test(zip);
+                },
+                
+                // 決済方法選択へ進む
+                proceedToPayment() {
+                    this.errorMessage = '';
+                    
+                    // 同意確認
+                    if (this.consent) {
+                        if (this.consent.privacy_policy_enabled && this.consent.privacy_policy_required && !this.privacyPolicyAgreed) {
+                            alert('個人情報の取り扱いに同意してください');
+                            return;
+                        }
+                        if (this.consent.terms_enabled && this.consent.terms_required && !this.termsAgreed) {
+                            alert('旅行条件に同意してください');
+                            return;
+                        }
+                    }
+                    
+                    if (!this.validate()) {
+                        return;
+                    }
+                    
+                    // 商品itemsに商品全体カスタムフィールド（category=1）を追加
+                    const updatedItems = this.bookingDraft.items.map(item => {
+                        if (item.type === 'product' && this.productFieldAnswers[item.id]) {
+                            return {
+                                ...item,
+                                product_custom_fields: this.productFieldAnswers[item.id]
+                            };
+                        }
+                        return item;
+                    });
+                    
+                    // LocalStorageに保存
+                    const bookingData = {
+                        ...this.bookingDraft,
+                        items: updatedItems,
+                        booker: this.booker,
+                        participants: this.participants,
+                        is_new_member: !this.isExistingMember,
+                        // 同意情報
+                        privacy_policy_agreed: this.privacyPolicyAgreed,
+                        terms_agreed: this.termsAgreed
+                    };
+                    
+                    localStorage.setItem('bookingDraft', JSON.stringify(bookingData));
+                    
+                    console.log('Booking data with participants and custom fields:', bookingData);
+                    
+                    // 決済方法選択ページへ
+                    window.location.href = '/payment-method';
+                },
+                
+                // 会員が参加するトグル
+                toggleMemberParticipation() {
+                    if (this.memberParticipates && this.participants.length > 0) {
+                        // 1番目の参加者に会員情報を自動入力
+                        const firstParticipant = this.participants[0];
+                        firstParticipant.family_name = this.booker.family_name;
+                        firstParticipant.first_name = this.booker.first_name;
+                        firstParticipant.family_kana = this.booker.family_kana;
+                        firstParticipant.first_kana = this.booker.first_kana;
+                        firstParticipant.email = this.booker.email;
+                        firstParticipant.phone = this.booker.tel;
+                        firstParticipant.address = this.booker.addr;
+                        
+                        console.log('会員情報を1番目の参加者に自動入力しました', firstParticipant);
+                    } else if (!this.memberParticipates && this.participants.length > 0) {
+                        // チェックを外した場合は1番目の参加者情報をクリア
+                        const firstParticipant = this.participants[0];
+                        firstParticipant.family_name = '';
+                        firstParticipant.first_name = '';
+                        firstParticipant.family_kana = '';
+                        firstParticipant.first_kana = '';
+                        firstParticipant.email = '';
+                        firstParticipant.phone = '';
+                        firstParticipant.address = '';
+                        
+                        console.log('1番目の参加者情報をクリアしました');
+                    }
+                },
+                
+                // 戻る
+                goBack() {
+                    // bookingDraftからevent_urlを取得して商品詳細ページへ
+                    if (this.bookingDraft && this.bookingDraft.event_url) {
+                        window.location.href = `/product-detail/${this.bookingDraft.event_url}`;
+                    } else if (this.bookingDraft && this.bookingDraft.event_id) {
+                        // フォールバック: event_urlがない場合はevent_idを使用
+                        window.location.href = `/product-detail?event_id=${this.bookingDraft.event_id}`;
+                    } else {
+                        // データがない場合は認証ページへ
+                        window.location.href = '/auth-email';
+                    }
+                },
+                
+                // Markdown rendering function
+                renderMarkdown(text) {
+                    if (!text) return '';
+                    
+                    // Simple markdown to HTML conversion
+                    let html = text;
+                    
+                    // Headers
+                    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+                    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+                    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+                    
+                    // Links
+                    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                    
+                    // Bold
+                    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    
+                    // Lists (unordered)
+                    html = html.replace(/^\- (.+)$/gm, '<li>$1</li>');
+                    html = html.replace(/(<li>.+<\/li>)/s, '<ul>$1</ul>');
+                    
+                    // Paragraphs
+                    html = html.split('\n\n').map(para => {
+                        if (para.startsWith('<h') || para.startsWith('<ul') || para.startsWith('<li')) {
+                            return para;
+                        }
+                        return `<p>${para}</p>`;
+                    }).join('\n');
+                    
+                    return html;
+                }
+            },
+            
+            async mounted() {
+                await this.loadSession();
+                await this.loadBookingDraft();
+                
+                // イベント情報と同意設定を取得
+                if (this.bookingDraft && this.bookingDraft.event_id) {
+                    try {
+                        const eventResponse = await axios.get(`/api/events/${this.bookingDraft.event_id}`);
+                        const event = eventResponse.data.event || eventResponse.data;
+                        this.consent = event.consent || null;
+                        this.requireParticipantInfo = event.require_participant_info !== undefined ? event.require_participant_info : 1;
+                        console.log('同意設定取得完了:', this.consent);
+                        console.log('参加者情報入力フラグ:', this.requireParticipantInfo);
+                    } catch (error) {
+                        console.error('イベント情報取得エラー:', error);
+                    }
+                }
+                
+                // 初期ローディング画面を削除（リダイレクトしない場合のみ）
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.remove();
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

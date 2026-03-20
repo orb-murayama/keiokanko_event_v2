@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>予約変更 | 管理画面</title>
+  
+  <!-- CSS読み込み -->
+  <link rel="stylesheet" href="/static/css/reset.css?v=20260210-004">
+  <link rel="stylesheet" href="/static/css/variables.css?v=20260210-004">
+  <link rel="stylesheet" href="/static/css/components.css?v=20260210-004">
+  <link rel="stylesheet" href="/static/css/admin.css?v=20260210-004">
+  <link rel="stylesheet" href="/static/css/utilities.css?v=20260210-004">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <!-- 戻るボタン -->
+    <div class="mb-3">
+      <a href="#" id="backToDetailBtn" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 予約詳細に戻る
+      </a>
+    </div>
+
+    <!-- 読み込み中 -->
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>読み込み中...</p>
+    </div>
+
+    <!-- エラーメッセージ -->
+    <div id="errorMessage" class="alert alert-danger hidden"></div>
+    <div id="successMessage" class="alert alert-success hidden"></div>
+
+    <!-- 予約変更フォーム -->
+    <div id="editForm" class="hidden">
+      <!-- 予約基本情報（読み取り専用） -->
+      <div class="admin-card mb-3">
+        <div class="card-header">
+          <h2 class="card-title">予約基本情報</h2>
+        </div>
+        <div class="card-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label class="detail-label">予約番号</label>
+              <div class="detail-value" id="bookingNumber">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">イベント名</label>
+              <div class="detail-value" id="eventName">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">予約者名</label>
+              <div class="detail-value" id="bookerName">-</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label">予約者メール</label>
+              <div class="detail-value" id="bookerEmail">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 予約明細と参加者情報 -->
+      <div id="bookingItemsContainer">
+        <!-- JavaScriptで動的生成 -->
+      </div>
+
+      <!-- 別のプランを追加ボタン -->
+      <div style="margin-top: 1rem; text-align: center;">
+        <button type="button" id="addPlanBtn" class="btn btn-success">
+          <i class="fas fa-plus"></i> 別のプランを追加
+        </button>
+      </div>
+
+      <!-- 保存ボタン -->
+      <div class="form-actions" style="margin-top: 2rem;">
+        <button type="button" id="saveBtn" class="btn btn-primary btn-lg">
+          <i class="fas fa-save"></i> 変更を保存
+        </button>
+        <a href="#" id="cancelBtn" class="btn btn-secondary btn-lg">
+          <i class="fas fa-times"></i> キャンセル
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2025 イベント予約管理システム</p>
+    </div>
+  </footer>
+
+  <!-- 商品選択モーダル -->
+  <div id="productSelectModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-box"></i> 商品を選択</h3>
+        <button class="modal-close" id="closeProductModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- タブナビゲーション -->
+        <div class="tab-navigation" style="display: flex; border-bottom: 2px solid #e9ecef; margin-bottom: 20px;">
+          <button id="tabRegistered" class="tab-btn active" style="flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-weight: bold; color: #0d6efd; border-bottom: 3px solid #0d6efd; transition: all 0.3s;">
+            <i class="fas fa-box"></i> 登録商品から選択
+          </button>
+          <button id="tabCustom" class="tab-btn" style="flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-weight: bold; color: #6c757d; border-bottom: 3px solid transparent; transition: all 0.3s;">
+            <i class="fas fa-edit"></i> 自由入力
+          </button>
+        </div>
+        
+        <!-- 登録商品タブの内容 -->
+        <div id="registeredProductTab" class="tab-content">
+          <!-- 商品検索 -->
+          <div class="form-group">
+            <input type="text" id="productSearch" class="form-control" placeholder="🔍 商品名で検索...">
+          </div>
+
+          <!-- 商品一覧 -->
+          <div id="productListContainer" style="max-height: 400px; overflow-y: auto;">
+            <div id="productLoading" class="text-center" style="padding: 2rem;">
+              <i class="fas fa-spinner fa-spin"></i> 読み込み中...
+            </div>
+            <div id="productList" class="hidden">
+              <!-- 商品リストはJavaScriptで動的生成 -->
+            </div>
+            <div id="productError" class="alert alert-danger hidden"></div>
+          </div>
+
+          <!-- 選択した商品の詳細 -->
+          <div id="selectedProductDetail" class="hidden" style="margin-top: 1.5rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
+            <h4 style="margin-bottom: 1rem;">選択した商品</h4>
+            <div class="detail-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+              <div>
+                <strong>商品名:</strong>
+                <div id="selectedProductName">-</div>
+              </div>
+              <div>
+                <strong>価格帯:</strong>
+                <select id="selectedPriceCategory" class="form-control" required style="font-size: 0.875rem;">
+                  <option value="">選択してください</option>
+                </select>
+              </div>
+              <div>
+                <strong>単価:</strong>
+                <div id="selectedProductPrice">-</div>
+              </div>
+              <div>
+                <strong>在庫状況:</strong>
+                <div id="selectedProductStock">-</div>
+              </div>
+              <div>
+                <strong>参加日:</strong>
+                <input type="date" id="selectedParticipationDate" class="form-control" required>
+              </div>
+              <div>
+                <strong>数量:</strong>
+                <input type="number" id="selectedQuantity" class="form-control" min="1" value="1" style="width: 120px;">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 自由入力タブの内容 -->
+        <div id="customProductTab" class="tab-content" style="display: none;">
+          <form id="customProductForm">
+            <!-- 商品名 -->
+            <div class="form-group">
+              <label class="form-label" style="font-weight: bold;">商品名 <span style="color: #dc3545;">*必須</span></label>
+              <input type="text" id="customProductName" class="form-control" placeholder="例: 手配手数料、特別対応費用、キャンセル手数料" required>
+              <small class="form-text" style="color: #6c757d;">わかりやすい名称を入力してください</small>
+            </div>
+            
+            <!-- 単価 -->
+            <div class="form-group">
+              <label class="form-label" style="font-weight: bold;">単価（税込） <span style="color: #dc3545;">*必須</span></label>
+              <div style="display: flex; align-items: center;">
+                <span style="padding: 8px 12px; background: #e9ecef; border: 1px solid #ced4da; border-right: none; border-radius: 4px 0 0 4px;">¥</span>
+                <input type="number" id="customProductPrice" class="form-control" min="0" step="1" placeholder="1000" required style="border-radius: 0 4px 4px 0; flex: 1;">
+              </div>
+              <small class="form-text" style="color: #6c757d;">マイナス金額で割引も可能です（例: -5000）</small>
+            </div>
+            
+            <!-- 数量 -->
+            <div class="form-group">
+              <label class="form-label" style="font-weight: bold;">数量</label>
+              <input type="number" id="customProductQuantity" class="form-control" min="1" value="1" style="width: 120px;">
+            </div>
+            
+            <!-- 小計表示 -->
+            <div class="form-group">
+              <label class="form-label" style="font-weight: bold;">小計</label>
+              <div style="font-size: 32px; font-weight: bold; color: #0d6efd; padding: 10px; background: #e7f3ff; border-radius: 8px; text-align: center;" id="customProductSubtotal">¥0</div>
+            </div>
+            
+            <!-- 備考 -->
+            <div class="form-group">
+              <label class="form-label" style="font-weight: bold;">備考（任意）</label>
+              <textarea id="customProductRemarks" class="form-control" rows="3" placeholder="内部管理用のメモ&#10;例: 特急手配のための追加費用"></textarea>
+              <small class="form-text" style="color: #6c757d;">※ お客様には表示されません（管理用メモ）</small>
+            </div>
+            
+            <!-- 注意書き -->
+            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 15px; margin-top: 20px;">
+              <div style="display: flex; align-items: start;">
+                <i class="fas fa-exclamation-triangle" style="color: #856404; margin-right: 10px; margin-top: 3px;"></i>
+                <div style="flex: 1;">
+                  <strong style="color: #856404;">注意事項</strong>
+                  <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 13px; color: #856404;">
+                    <li>自由入力商品には在庫管理がありません</li>
+                    <li>参加日の設定は不要です（手数料等に使用）</li>
+                    <li>参加者情報の収集はできません</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelProductSelect">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="confirmProductSelect" disabled>
+          <i class="fas fa-plus"></i> 追加
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js?v=20260212-002"></script>
+  <script src="/static/js/pages/admin.js?v=20260212-002"></script>
+  <script src="/static/js/pages/admin-bookings-edit.js?v=1772607400000"></script>
+</body>
+</html>

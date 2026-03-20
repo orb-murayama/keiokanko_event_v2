@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品フォーム設定 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    /* サジェストリストのスタイル */
+    .suggest-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-top: none;
+      border-radius: 0 0 0.375rem 0.375rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    
+    .suggest-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f3f5;
+      transition: background-color 0.2s;
+    }
+    
+    .suggest-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .suggest-item:last-child {
+      border-bottom: none;
+    }
+    
+    .suggest-item-name {
+      font-weight: 500;
+      color: #212529;
+      margin-bottom: 0.25rem;
+    }
+    
+    .suggest-item-info {
+      font-size: 0.875rem;
+      color: #6c757d;
+    }
+    
+    .suggest-empty {
+      padding: 1rem;
+      text-align: center;
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+  </style>
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- パンくずリスト -->
+      <nav class="breadcrumb">
+        <a href="/admin">管理画面</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/admin/products" id="productsLink">商品管理</a>
+        <i class="fas fa-chevron-right"></i>
+        <span id="productName">フォーム設定</span>
+      </nav>
+
+      <!-- ヘッダー -->
+      <div class="card-header">
+        <h2 class="card-title">申込フォーム項目設定</h2>
+        <div class="header-actions">
+          <button id="addFieldBtn" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            フィールドを追加
+          </button>
+        </div>
+      </div>
+
+      <!-- 商品名表示 -->
+      <div class="info-card">
+        <div class="info-label">商品名:</div>
+        <div class="info-value" id="productNameDisplay">読み込み中...</div>
+      </div>
+
+      <!-- フォーム設定コピー機能 -->
+      <div class="info-card" style="background: #f8f9fa; border: 2px dashed #dee2e6; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1rem; margin-bottom: 1rem; color: #495057;">
+          <i class="fas fa-copy"></i> 別の商品の設定をコピー
+        </h3>
+        <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+          <div style="flex: 1; position: relative;">
+            <input 
+              type="text" 
+              id="productSearchInput" 
+              class="form-control" 
+              placeholder="商品名を入力して検索..."
+              autocomplete="off"
+              style="padding-right: 2rem;"
+            >
+            <i class="fas fa-search" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #6c757d; pointer-events: none;"></i>
+            <!-- サジェストリスト -->
+            <div id="productSuggestList" class="suggest-list" style="display: none;">
+              <!-- JavaScriptで動的生成 -->
+            </div>
+          </div>
+          <button type="button" id="copyFormFieldsBtn" class="btn btn-primary" disabled>
+            <i class="fas fa-copy"></i> 設定
+          </button>
+        </div>
+        <div id="copyResultMessage" style="margin-top: 0.5rem; font-size: 0.875rem;"></div>
+      </div>
+
+      <!-- メッセージ表示エリア -->
+      <div id="errorMessage" class="alert alert-danger hidden" role="alert"></div>
+      <div id="successMessage" class="alert alert-success hidden" role="alert"></div>
+
+      <!-- フォームフィールド設定 -->
+      <form id="formFieldsForm">
+        <div id="formFieldsContainer" class="form-fields-container">
+          <!-- JavaScriptで動的生成 -->
+        </div>
+        
+        <!-- フォームアクション（右寄せ） -->
+        <div class="form-actions">
+          <a href="/admin/products" class="btn btn-secondary">
+            <i class="fas fa-times"></i>
+            キャンセル
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i>
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ローディング表示 -->
+    <div id="loading" class="loading-overlay" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+  </main>
+
+  <!-- JavaScript読み込み -->
+  <script src="/static/js/modules/api.js?v=20260127-4"></script>
+  <script src="/static/js/modules/utils.js?v=20260127-4"></script>
+  <script src="/static/js/pages/admin.js?v=20260127-4"></script>
+  <script src="/static/js/pages/admin-product-form-fields.js?v=20260127-4"></script>
+</body>
+</html>

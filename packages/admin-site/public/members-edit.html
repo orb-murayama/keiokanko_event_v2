@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会員編集 | 管理画面</title>
+  
+  <!-- CSS読み込み -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container admin-main">
+    <div class="admin-content">
+      <div class="admin-header-row">
+        <div>
+          <h2 class="admin-page-title" id="pageTitle">
+            <i class="fas fa-user-edit"></i> 会員編集
+          </h2>
+          <nav class="breadcrumb">
+            <a href="/">トップ</a>
+            <span>/</span>
+            <a href="/admin">管理画面</a>
+            <span>/</span>
+            <a href="/admin/members">会員管理</a>
+            <span>/</span>
+            <span id="breadcrumbTitle">会員編集</span>
+          </nav>
+        </div>
+        <a href="/admin/members" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> 一覧に戻る
+        </a>
+      </div>
+
+      <!-- 会員登録・編集フォーム -->
+      <form id="memberForm" class="admin-form">
+        <input type="hidden" id="memberId" name="id">
+        <input type="hidden" id="mode" name="mode">
+
+        <div class="form-section">
+          <h3 class="form-section-title">基本情報</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email" class="form-label">
+                <span class="text-danger">*</span> メールアドレス
+              </label>
+              <input type="email" id="email" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row" id="passwordSection">
+            <div class="form-group">
+              <label for="password" class="form-label" id="passwordLabel">パスワード</label>
+              <input type="password" id="password" class="form-control">
+              <small class="form-help">編集時は変更する場合のみ入力してください</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="family_name" class="form-label">
+                <span class="text-danger">*</span> 姓
+              </label>
+              <input type="text" id="family_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="first_name" class="form-label">
+                <span class="text-danger">*</span> 名
+              </label>
+              <input type="text" id="first_name" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="family_kana" class="form-label">
+                姓（カナ）
+              </label>
+              <input type="text" id="family_kana" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="first_kana" class="form-label">
+                名（カナ）
+              </label>
+              <input type="text" id="first_kana" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="last_name_en" class="form-label">姓（英語）</label>
+              <input type="text" id="last_name_en" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="first_name_en" class="form-label">名（英語）</label>
+              <input type="text" id="first_name_en" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sex" class="form-label">
+                性別
+              </label>
+              <select id="sex" class="form-control">
+                <option value="">選択してください</option>
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="birth" class="form-label">
+                生年月日
+              </label>
+              <input type="date" id="birth" class="form-control">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">連絡先情報</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="zip" class="form-label">
+                郵便番号
+              </label>
+              <input type="text" id="zip" class="form-control" placeholder="123-4567">
+            </div>
+            <div class="form-group">
+              <label for="pref_id" class="form-label">
+                都道府県
+              </label>
+              <select id="pref_id" class="form-control">
+                <option value="">選択してください</option>
+                <option value="1">北海道</option>
+                <option value="2">青森県</option>
+                <option value="3">岩手県</option>
+                <option value="4">宮城県</option>
+                <option value="5">秋田県</option>
+                <option value="6">山形県</option>
+                <option value="7">福島県</option>
+                <option value="8">茨城県</option>
+                <option value="9">栃木県</option>
+                <option value="10">群馬県</option>
+                <option value="11">埼玉県</option>
+                <option value="12">千葉県</option>
+                <option value="13">東京都</option>
+                <option value="14">神奈川県</option>
+                <!-- 他の都道府県は省略 -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="addr" class="form-label">
+                住所
+              </label>
+              <input type="text" id="addr" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tel" class="form-label">電話番号</label>
+              <input type="tel" id="tel" class="form-control" placeholder="03-1234-5678">
+            </div>
+            <div class="form-group">
+              <label for="mobile" class="form-label">
+                携帯電話
+              </label>
+              <input type="tel" id="mobile" class="form-control" placeholder="090-1234-5678">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">ステータス</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-checkbox">
+                <input type="checkbox" id="enable_flg" checked>
+                <span>有効</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> 保存
+          </button>
+          <a href="/admin/members" class="btn btn-secondary">
+            <i class="fas fa-times"></i> キャンセル
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- JavaScript読み込み -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-member-edit.js"></script>
+</body>
+</html>

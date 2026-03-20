@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メールプレースホルダー一覧</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+        }
+        .section-title-icon {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:hover {
+            background: #f7fafc;
+        }
+        .placeholder {
+            font-family: 'Courier New', monospace;
+            background: #edf2f7;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #667eea;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .example {
+            color: #718096;
+            font-size: 13px;
+        }
+        .note-box {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .note-box h3 {
+            color: #c05621;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .note-box h3::before {
+            content: "⚠️";
+            margin-right: 8px;
+        }
+        .note-box ul {
+            margin-left: 20px;
+            color: #744210;
+        }
+        .note-box li {
+            margin: 8px 0;
+        }
+        .template-example {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .template-example h4 {
+            color: #2d3748;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .template-example h4::before {
+            content: "📝";
+            margin-right: 8px;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 20px;
+            color: #4a5568;
+            transition: all 0.2s;
+        }
+        .close-btn:hover {
+            background: #f7fafc;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <button class="close-btn" onclick="window.close()">✕</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📧 メールプレースホルダー一覧</h1>
+            <p>メールテンプレートで使用できるプレースホルダーの完全ガイド</p>
+        </div>
+        
+        <div class="content">
+            <!-- 予約基本情報 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-title-icon">🎫</span>
+                    予約基本情報
+                </h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%">プレースホルダー</th>
+                                <th style="width: 40%">説明</th>
+                                <th style="width: 30%">例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="placeholder">{{booking_number}}</span></td>
+                                <td>予約番号</td>
+                                <td class="example">BK20260317-001</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{created_at}}</span></td>
+                                <td>予約作成日時</td>
+                                <td class="example">2026-03-17 10:30:45</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{status}}</span></td>
+                                <td>予約ステータス</td>
+                                <td class="example">confirmed, canceled等</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 顧客情報 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-title-icon">👤</span>
+                    顧客情報
+                </h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%">プレースホルダー</th>
+                                <th style="width: 40%">説明</th>
+                                <th style="width: 30%">例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="placeholder">{{customer_name}}</span></td>
+                                <td>顧客名</td>
+                                <td class="example">山田 太郎</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{customer_email}}</span></td>
+                                <td>顧客メールアドレス</td>
+                                <td class="example">yamada@example.com</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{customer_phone}}</span></td>
+                                <td>顧客電話番号</td>
+                                <td class="example">090-1234-5678</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{customer_address}}</span></td>
+                                <td>顧客住所</td>
+                                <td class="example">100-0001 東京都千代田区...</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{customer_postal_code}}</span></td>
+                                <td>郵便番号</td>
+                                <td class="example">100-0001</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- イベント情報 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-title-icon">🎪</span>
+                    イベント情報
+                </h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%">プレースホルダー</th>
+                                <th style="width: 40%">説明</th>
+                                <th style="width: 30%">例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="placeholder">{{event_name}}</span></td>
+                                <td>イベント名</td>
+                                <td class="example">東京スカイツリー®展望台入場券</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{event_start_date}}</span></td>
+                                <td>開催開始日</td>
+                                <td class="example">2026-03-01</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{event_end_date}}</span></td>
+                                <td>開催終了日</td>
+                                <td class="example">2026-12-31</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{event_location}}</span></td>
+                                <td>開催場所</td>
+                                <td class="example">東京スカイツリー</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 金額情報 -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-title-icon">💰</span>
+                    金額情報
+                </h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%">プレースホルダー</th>
+                                <th style="width: 40%">説明</th>
+                                <th style="width: 30%">例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="placeholder">{{total_amount}}</span></td>
+                                <td>合計金額</td>
+                                <td class="example">10000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{paid_amount}}</span></td>
+                                <td>支払済み金額</td>
+                                <td class="example">10000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{pending_amount}}</span></td>
+                                <td>未払い金額</td>
+                                <td class="example">0</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{cancellation_fee}}</span></td>
+                                <td>キャンセル料</td>
+                                <td class="example">1000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{refund_amount}}</span></td>
+                                <td>返金額</td>
+                                <td class="example">9000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 明細情報（繰り返し） -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-title-icon">📋</span>
+                    明細情報（繰り返し行）
+                    <span class="badge">自動展開</span>
+                </h2>
+                <p style="margin-bottom: 15px; color: #4a5568;">
+                    複数の商品/オプションがある場合、自動的に繰り返し展開されます
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%">プレースホルダー</th>
+                                <th style="width: 40%">説明</th>
+                                <th style="width: 30%">例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="placeholder">{{items.item_name}}</span></td>
+                                <td>商品名</td>
+                                <td class="example">展望デッキ入場券</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{items.quantity}}</span></td>
+                                <td>数量</td>
+                                <td class="example">2</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{items.unit_price}}</span></td>
+                                <td>単価</td>
+                                <td class="example">5000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{items.subtotal}}</span></td>
+                                <td>小計</td>
+                                <td class="example">10000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{items.participation_date}}</span></td>
+                                <td>参加日</td>
+                                <td class="example">2026-03-20</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="template-example">
+                    <h4>使用例：明細情報の表示</h4>
+                    <div class="code-block">■ お申し込み明細
+{{items.item_name}} × {{items.quantity}}個
+　単価：¥{{items.unit_price}}
+　小計：¥{{items.subtotal}}
+　参加日：{{items.participation_date}}</div>
+                    <p style="margin-top: 10px; color: #4a5568; font-size: 13px;">
+                        ↓ 商品が2つの場合、以下のように展開されます
+                    </p>
+                    <div class="code-block">■ お申し込み明細
+展望デッキ入場券 × 2個
+　単価：¥5000
+　小計：¥10000
+　参加日：2026-03-20
+
+展望回廊入場券 × 1個
+　単価：¥3000
+　小計：¥3000
+　参加日：2026-03-20</div>
+                </div>
+            </div>
+
+            <!-- 決済情報（繰り返し） -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-title-icon">💳</span>
+                    決済情報（繰り返し行）
+                    <span class="badge">自動展開</span>
+                </h2>
+                <p style="margin-bottom: 15px; color: #4a5568;">
+                    複数の決済記録がある場合、自動的に繰り返し展開されます
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%">プレースホルダー</th>
+                                <th style="width: 40%">説明</th>
+                                <th style="width: 30%">例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="placeholder">{{payments.payment_number}}</span></td>
+                                <td>決済番号</td>
+                                <td class="example">PAY20260317-001</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{payments.payment_method}}</span></td>
+                                <td>決済方法</td>
+                                <td class="example">credit_card, bank_transfer等</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{payments.amount}}</span></td>
+                                <td>決済金額</td>
+                                <td class="example">10000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{payments.payment_date}}</span></td>
+                                <td>決済日時</td>
+                                <td class="example">2026-03-17 10:35:00</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{payments.payment_status}}</span></td>
+                                <td>決済ステータス</td>
+                                <td class="example">completed, pending等</td>
+                            </tr>
+                            <tr>
+                                <td><span class="placeholder">{{payments.payment_due_date}}</span></td>
+                                <td>支払期限</td>
+                                <td class="example">2026-03-24</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 注意事項 -->
+            <div class="note-box">
+                <h3>注意事項</h3>
+                <ul>
+                    <li><strong>繰り返し行</strong>（<span class="placeholder">{{items.xxx}}</span>、<span class="placeholder">{{payments.xxx}}</span>）は、自動的にデータ件数分繰り返されます</li>
+                    <li>プレースホルダーに対応するデータが存在しない場合は<strong>空文字</strong>に置換されます</li>
+                    <li>数値は自動的に文字列に変換されます（通貨記号は自動付与されません）</li>
+                    <li>改行は<code>\n</code>（Enterキー）で記述し、<strong>テキストメール</strong>として送信されます</li>
+                    <li>HTMLタグは使用できません（プレーンテキスト形式のみ）</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

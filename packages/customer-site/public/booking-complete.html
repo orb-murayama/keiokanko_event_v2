@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約完了 | イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* 完了メッセージ */
+        .success-header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+        .success-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        .success-header h1 {
+            font-size: 2rem;
+            color: #059669;
+            margin-bottom: 10px;
+        }
+        .success-header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        /* 予約番号 */
+        .booking-number {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .booking-number-label {
+            font-size: 0.9rem;
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+        .booking-number-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0369a1;
+            letter-spacing: 2px;
+        }
+        
+        /* セクション */
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #6366f1;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+        .info-row.total {
+            font-size: 1.2rem;
+            color: #6366f1;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #6366f1;
+        }
+        
+        /* 注意事項 */
+        .notice {
+            background: #fffbeb;
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .notice-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 15px;
+        }
+        .notice ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .notice li {
+            color: #78350f;
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .notice li:before {
+            content: "•";
+            position: absolute;
+            left: 10px;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+        
+        /* ボタン */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        button.secondary {
+            background: #f3f4f6;
+            color: #555;
+        }
+        button.secondary:hover {
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- 完了メッセージ -->
+            <div class="success-header">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h1>予約が完了しました</h1>
+                <p>ご予約ありがとうございます</p>
+            </div>
+            
+            <!-- 予約番号 -->
+            <div class="booking-number">
+                <div class="booking-number-label">予約番号</div>
+                <div class="booking-number-value">{{ bookingNumber }}</div>
+            </div>
+            
+            <!-- 予約内容 -->
+            <div class="section" v-if="bookingData">
+                <div class="section-title"><i class="fas fa-calendar-check"></i> 予約内容</div>
+                <div class="info-row">
+                    <span class="info-label">イベント</span>
+                    <span class="info-value">{{ bookingData.event_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">参加日</span>
+                    <span class="info-value">{{ bookingData.participation_date }}</span>
+                </div>
+                <div class="info-row" v-for="item in bookingData.items" :key="item.id">
+                    <span class="info-label">{{ item.name }} ({{ item.category }})</span>
+                    <span class="info-value">{{ item.quantity }}名 × ¥{{ item.unit_price.toLocaleString() }}</span>
+                </div>
+                <div class="info-row total">
+                    <span class="info-label">合計金額</span>
+                    <span class="info-value">¥{{ bookingData.total_amount.toLocaleString() }}</span>
+                </div>
+            </div>
+            
+            <!-- お客様情報 -->
+            <div class="section" v-if="bookingData">
+                <div class="section-title"><i class="fas fa-user"></i> お客様情報</div>
+                <div class="info-row">
+                    <span class="info-label">お名前</span>
+                    <span class="info-value">{{ bookingData.booker.family_name }} {{ bookingData.booker.first_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">フリガナ</span>
+                    <span class="info-value">{{ bookingData.booker.family_kana }} {{ bookingData.booker.first_kana }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">メールアドレス</span>
+                    <span class="info-value">{{ bookingData.booker.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">電話番号</span>
+                    <span class="info-value">{{ bookingData.booker.tel }}</span>
+                </div>
+            </div>
+            
+            <!-- 決済情報 -->
+            <div class="section" v-if="bookingData">
+                <div class="section-title"><i class="fas fa-credit-card"></i> お支払い方法</div>
+                <div class="info-row">
+                    <span class="info-label">決済方法</span>
+                    <span class="info-value">{{ getPaymentMethodLabel(bookingData.payment_method) }}</span>
+                </div>
+                <div class="info-row" v-if="bookingData.payment_method === 'credit_card'">
+                    <span class="info-label">ステータス</span>
+                    <span class="info-value" style="color: #10b981;">決済完了</span>
+                </div>
+            </div>
+            
+            <!-- 注意事項 -->
+            <div class="notice">
+                <div class="notice-title"><i class="fas fa-info-circle"></i> 重要なお知らせ</div>
+                <ul>
+                    <li>予約確認メールを送信しました。メールが届かない場合は、迷惑メールフォルダをご確認ください。</li>
+                    <li>予約番号は当日受付で必要となりますので、大切に保管してください。</li>
+                    <li>キャンセルポリシーについては、イベント詳細ページをご確認ください。</li>
+                    <li>お問い合わせの際は、予約番号をお伝えください。</li>
+                </ul>
+            </div>
+            
+            <!-- ボタン -->
+            <div class="button-group">
+                <button class="secondary" @click="goToProductDetail">
+                    <i class="fas fa-arrow-left"></i> 商品ページに戻る
+                </button>
+                <button class="primary" @click="goToMyPage">
+                    <i class="fas fa-check-circle"></i> 予約内容を確認する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    bookingNumber: '',
+                    bookingId: null,
+                    eventUrl: '',
+                    bookingData: null
+                };
+            },
+            methods: {
+                getPaymentMethodLabel(method) {
+                    const labels = {
+                        'credit_card': 'クレジットカード決済',
+                        'convenience': 'コンビニ決済',
+                        'bank_transfer': '銀行振込',
+                        'on_site': '現地決済'
+                    };
+                    return labels[method] || method;
+                },
+                
+                goToProductDetail() {
+                    // URLパラメータからevent_urlを使用
+                    if (this.eventUrl) {
+                        window.location.href = `/product-detail/${this.eventUrl}`;
+                        return;
+                    }
+                    
+                    // フォールバック: LocalStorageから予約データを取得
+                    const draft = localStorage.getItem('bookingDraft');
+                    if (draft) {
+                        const bookingData = JSON.parse(draft);
+                        if (bookingData.event_url) {
+                            window.location.href = `/product-detail/${bookingData.event_url}`;
+                            return;
+                        }
+                    }
+                    
+                    // データがない場合は商品詳細ページ（汎用）へ
+                    window.location.href = '/product-detail';
+                },
+                
+                goToMyPage() {
+                    // マイページ予約詳細ページへ遷移
+                    if (this.bookingId) {
+                        window.location.href = `/mypage/booking/${this.bookingId}`;
+                    } else {
+                        // booking_idがない場合はマイページ予約一覧へ
+                        window.location.href = '/mypage/bookings';
+                    }
+                }
+            },
+            mounted() {
+                // URLパラメータから予約番号、booking_id、event_urlを取得
+                const params = new URLSearchParams(window.location.search);
+                this.bookingNumber = params.get('booking_number') || '';
+                this.bookingId = params.get('booking_id') || null;
+                this.eventUrl = params.get('event_url') || '';
+                
+                console.log('📋 予約完了画面:', {
+                    bookingNumber: this.bookingNumber,
+                    bookingId: this.bookingId,
+                    eventUrl: this.eventUrl
+                });
+                
+                // LocalStorageから予約データを取得（フォールバック用）
+                const draft = localStorage.getItem('bookingDraft');
+                if (draft) {
+                    this.bookingData = JSON.parse(draft);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

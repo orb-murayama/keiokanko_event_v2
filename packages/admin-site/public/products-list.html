@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品管理 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- ヘッダー -->
+      <div class="card-header">
+        <h2 class="card-title">商品一覧</h2>
+        <a href="/products-edit.html?id=new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> 新規商品登録
+        </a>
+      </div>
+
+      <!-- 検索フォーム -->
+      <form id="searchForm" class="search-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="searchEventId" class="form-label">イベント</label>
+            <select id="searchEventId" class="form-control">
+              <option value="">すべて</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchName" class="form-label">商品名</label>
+            <input type="text" id="searchName" class="form-control" placeholder="商品名で検索">
+          </div>
+          <div class="form-group">
+            <label for="searchStatus" class="form-label">状態</label>
+            <select id="searchStatus" class="form-control">
+              <option value="">すべて</option>
+              <option value="1">有効</option>
+              <option value="0">無効</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> 検索
+          </button>
+          <button type="button" id="resetBtn" class="btn btn-secondary">
+            <i class="fas fa-redo"></i> リセット
+          </button>
+        </div>
+      </form>
+
+      <!-- 読み込み中 -->
+      <div id="loading" class="hidden">読み込み中...</div>
+
+      <!-- テーブル -->
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>画像</th>
+              <th>商品名</th>
+              <th>イベント</th>
+              <th>販売期間</th>
+              <th>状態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <!-- データはJavaScriptで動的に挿入 -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ページネーション -->
+      <div id="pagination" class="pagination hidden"></div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="admin-footer">
+    <div class="container">
+      <p>&copy; 2024 イベント予約管理システム. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-products.js"></script>
+</body>
+</html>

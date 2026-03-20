@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クライアント管理 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <!-- ヘッダー -->
+      <div class="card-header">
+        <h2 class="card-title">クライアント一覧</h2>
+        <a href="/admin/clients/new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> 新規クライアント登録
+        </a>
+      </div>
+
+      <!-- 検索フォーム -->
+      <form id="searchForm" class="search-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="searchName" class="form-label">クライアント名</label>
+            <input type="text" id="searchName" class="form-control" placeholder="クライアント名で検索">
+          </div>
+          <div class="form-group">
+            <label for="searchEmail" class="form-label">メールアドレス</label>
+            <input type="text" id="searchEmail" class="form-control" placeholder="メールアドレスで検索">
+          </div>
+          <div class="form-group">
+            <label for="searchStatus" class="form-label">状態</label>
+            <select id="searchStatus" class="form-control">
+              <option value="">すべて</option>
+              <option value="1">有効</option>
+              <option value="0">無効</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> 検索
+          </button>
+          <button type="button" id="resetBtn" class="btn btn-secondary">
+            <i class="fas fa-redo"></i> リセット
+          </button>
+        </div>
+      </form>
+
+      <!-- 読み込み中 -->
+      <div id="loading" class="hidden">読み込み中...</div>
+      
+      <!-- エラーメッセージ -->
+      <div id="errorMessage" class="hidden"></div>
+
+      <!-- クライアントテーブル -->
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>クライアント名</th>
+              <th>担当者名</th>
+              <th>メールアドレス</th>
+              <th>電話番号</th>
+              <th>有効</th>
+              <th>登録日</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="clientsTableBody">
+            <tr>
+              <td colspan="8" class="text-center">読み込み中...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ページネーション -->
+      <div id="pagination" class="pagination"></div>
+    </div>
+  </main>
+
+  <!-- JavaScript読み込み -->
+  <script src="/static/js/modules/api.js"></script>
+  <script src="/static/js/modules/utils.js"></script>
+  <script src="/static/js/pages/admin.js"></script>
+  <script src="/static/js/pages/admin-clients.js"></script>
+</body>
+</html>

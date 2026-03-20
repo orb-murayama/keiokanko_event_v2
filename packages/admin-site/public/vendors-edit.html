@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">販売会社登録 | 管理画面</title>
+  
+  <!-- CSS読み込み（適切な順序で） -->
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/variables.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="stylesheet" href="/static/css/utilities.css">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css" rel="stylesheet">
+  <!-- u7ba1u7406u753bu9762u8a8du8a3cu30c1u30a7u30c3u30af -->
+  <script src="/static/js/admin-auth.js"></script>
+  <script src="/js/components/common-header.js"></script>
+</head>
+<body>
+<!-- メインコンテンツ -->
+  <main class="container">
+    <div class="admin-card">
+      <form id="vendorForm">
+        <input type="hidden" id="vendorId" name="vendorId">
+        <input type="hidden" id="mode" name="mode">
+
+        <!-- 基本情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-info-circle"></i>
+            基本情報
+          </h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name" class="form-label">
+                <span class="text-danger">*</span> 販売会社名
+              </label>
+              <input type="text" id="name" name="name" class="form-control" 
+                     placeholder="例: 株式会社〇〇" required>
+            </div>
+
+            <div class="form-group">
+              <label for="contactable_person" class="form-label">
+                担当者名
+              </label>
+              <input type="text" id="contactable_person" name="contactable_person" class="form-control" 
+                     placeholder="例: 山田太郎">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email" class="form-label">
+                メールアドレス
+              </label>
+              <input type="email" id="email" name="email" class="form-control" 
+                     placeholder="例: info@example.com">
+            </div>
+
+            <div class="form-group">
+              <label for="tel" class="form-label">
+                電話番号
+              </label>
+              <input type="tel" id="tel" name="tel" class="form-control" 
+                     placeholder="例: 03-1234-5678">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fax" class="form-label">
+                FAX番号
+              </label>
+              <input type="tel" id="fax" name="fax" class="form-control" 
+                     placeholder="例: 03-1234-5679">
+            </div>
+          </div>
+        </div>
+
+        <!-- 住所情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-map-marker-alt"></i>
+            住所情報
+          </h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="zip" class="form-label">
+                郵便番号
+              </label>
+              <input type="text" id="zip" name="zip" class="form-control" 
+                     placeholder="例: 100-0001">
+            </div>
+
+            <div class="form-group">
+              <label for="pref_id" class="form-label">
+                都道府県
+              </label>
+              <select id="pref_id" name="pref_id" class="form-control">
+                <option value="">選択してください</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="addr" class="form-label">
+                住所
+              </label>
+              <input type="text" id="addr" name="addr" class="form-control" 
+                     placeholder="例: 千代田区千代田1-1-1">
+            </div>
+          </div>
+        </div>
+
+        <!-- 営業情報 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-clock"></i>
+            営業情報
+          </h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="business_hours" class="form-label">
+                営業時間
+              </label>
+              <input type="text" id="business_hours" name="business_hours" class="form-control" 
+                     placeholder="例: 9:00-18:00">
+            </div>
+
+            <div class="form-group">
+              <label for="closed_days" class="form-label">
+                休業日
+              </label>
+              <input type="text" id="closed_days" name="closed_days" class="form-control" 
+                     placeholder="例: 土日祝">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="business_notes" class="form-label">
+                営業に関する注意事項
+              </label>
+              <textarea id="business_notes" name="business_notes" class="form-control" rows="3" 
+                        placeholder="営業に関する注意事項を入力"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- その他 -->
+        <div class="form-section">
+          <h2 class="form-section-title">
+            <i class="fas fa-file-alt"></i>
+            その他
+          </h2>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="remarks" class="form-label">
+                備考
+              </label>
+              <textarea id="remarks" name="remarks" class="form-control" rows="3" 
+                        placeholder="備考を入力"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="reg_flg" name="reg_flg" value="1" checked>
+                <span>有効化する</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作ボタン -->
+        <div class="form-actions-sticky">
+          <button type="button" onclick="history.back()" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> キャンセル
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> 保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/static/js/pages/admin-vendor-edit.js"></script>
+</body>
+</html>
